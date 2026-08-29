@@ -256,45 +256,68 @@ function photo(x){
 }
 
 async function foodAI(){
- let d=$("fd").value.trim();
- if(!foodImage&&!d)return alert("Take or upload a photo, or describe the food.");
+  let d=$("fd").value.trim();
 
- $("foodResult").innerHTML=
- '<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b><p class="muted">Analyzing your food...</p></div>';
-
- try{
-  let r=await fetch("https://neyvo-food-ai.creatermsg.workers.dev",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    image:foodImage,
-    mime:foodMime,
-    description:d
-   })
-  });
-
-  let x=await r.json();
-
-  if(!r.ok){
-   $("foodResult").innerHTML=
-    '<div class="card" style="margin-top:15px"><b>⚠️ AI Error</b><p class="muted" style="margin-top:8px">'+
-    esc(x.detail||x.error||("Request failed: "+r.status))+
-    '</p></div>';
-   return;
+  if(!foodImage&&!d){
+    return alert("Take or upload a photo, or describe the food.");
   }
 
   $("foodResult").innerHTML=
-   '<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b>'+
-   '<p style="margin-top:8px;white-space:pre-wrap">'+esc(x.result||"No result returned.")+
-   '</p></div>';
+    '<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b><p class="muted">Analyzing your food...</p></div>';
 
- }catch(e){
-  $("foodResult").innerHTML=
-   '<div class="card" style="margin-top:15px"><b>⚠️ Connection Error</b>'+
-   '<p class="muted" style="margin-top:8px">'+esc(e.message)+'</p></div>';
- }
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),30000);
 
-}
+  try{
+    let r=await fetch("https://neyvo-food-ai.creatermsg.workers.dev",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        image:foodImage,
+        mime:foodMime,
+        description:d
+      }),
+      signal:controller.signal
+    });
+
+    let text=await r.text();
+    let x;
+
+    try{x=JSON.parse(text)}
+    catch{x={error:text}};
+
+    if(!r.ok){
+      $("foodResult").innerHTML=
+        '<div class="card" style="margin-top:15px"><b>⚠️ AI Error</b>'+
+        '<p class="muted" style="margin-top:8px">'+
+        esc(x.detail||x.error||("HTTP "+r.status))+
+        '</p></div>';
+      return;
+    }
+
+    $("foodResult").innerHTML=
+      '<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b>'+
+      '<p style="margin-top:8px;white-space:pre-wrap">'+
+      esc(x.result||"No result returned.")+
+      '</p></div>';
+
+  }catch(e){
+    let msg=e.name==="AbortError"
+      ?"The AI request timed out after 30 seconds."
+      :"Connection error: "+e.message;
+
+    $("foodResult").innerHTML=
+      '<div class="card" style="margin-top:15px"><b>⚠️ Food AI</b>'+
+      '<p class="muted" style="margin-top:8px">'+
+      esc(msg)+
+      '</p></div>';
+
+  }finally{
+    clearTimeout(timer);
+  }
+
+
+
 function toggle(b){b.textContent=b.textContent=="ON"?"OFF":"ON"}
 function esc(s){return String(s||"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
 
