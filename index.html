@@ -50,7 +50,7 @@ input,select,textarea{width:100%;padding:12px;border:1px solid var(--l);border-r
 <button data-p="forget">⚡ Don't Forget</button>
 <button data-p="food">📷 Food</button>
 <button data-p="dashboard">🏆 Dashboard</button>
-<button data-p="world">🌎 World</button>
+<button data-p="world">🌎 World</button>]
 <button data-p="settings">⚙ Settings</button>
 </nav>
 </aside>
@@ -186,8 +186,9 @@ function today(){return new Date().toISOString().slice(0,10)}
 function active(t){let d=today();return(!t.start||d>=t.start)&&(!t.end||d<=t.end)}
 
 function get(type){
-if(type=="repeat")return tasks.filter(t=>active(t)&&(t.repeat!="none"||t.type=="repeat"));
-return tasks.filter(t=>active(t)&&t.type==type)
+if(type=="repeat")
+return tasks.filter(t=>active(t)&&!t.skip&&(t.repeat!="none"||t.type=="repeat"));
+return tasks.filter(t=>active(t)&&!t.skip&&t.type==type)
 }
 
 function taskHTML(t){
