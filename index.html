@@ -5,198 +5,1036 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#635bff">
 <title>NEYVO</title>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--p:#635bff;--bg:#f6f7fb;--card:#fff;--t:#171927;--m:#74788b;--l:#e8e9f0}
 body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--t)}
-button,input,select,textarea{font:inherit}button{border:0;cursor:pointer}
-.app{min-height:100vh;display:flex}.side{width:235px;position:fixed;inset:0 auto 0 0;background:#fff;border-right:1px solid var(--l);padding:25px 14px}
-.logo{font-size:27px;font-weight:900;padding:0 12px 28px}.logo span{color:var(--p)}
-.nav{display:grid;gap:5px}.nav button{background:none;text-align:left;padding:13px;border-radius:11px;color:var(--m);font-weight:700}
+button,input,select,textarea{font:inherit}
+button{border:0;cursor:pointer}
+.app{min-height:100vh;display:flex}
+.side{width:235px;position:fixed;inset:0 auto 0 0;background:#fff;border-right:1px solid var(--l);padding:25px 14px}
+.logo{font-size:27px;font-weight:900;padding:0 12px 28px}
+.logo span{color:var(--p)}
+.nav{display:grid;gap:5px}
+.nav button{background:none;text-align:left;padding:13px;border-radius:11px;color:var(--m);font-weight:700}
 .nav button.active,.nav button:hover{background:#f0efff;color:var(--p)}
 .main{margin-left:235px;padding:28px;width:calc(100% - 235px);max-width:1450px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{font-size:27px}.muted{color:var(--m);font-size:14px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.top h1{font-size:27px}
+.muted{color:var(--m);font-size:14px}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:800}
-.page{display:none}.page.active{display:block}
+.page{display:none}
+.page.active{display:block}
 .card{background:var(--card);border:1px solid var(--l);border-radius:18px;padding:19px;margin-bottom:15px}
-.hero{background:linear-gradient(135deg,#635bff,#8179ff);color:#fff;border:0}.hero h2{font-size:27px;margin:8px 0 18px}
-.btn{background:var(--p);color:#fff;padding:11px 16px;border-radius:11px;font-weight:800}.btn.light{background:#fff;color:var(--p)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.stat strong{display:block;font-size:26px;margin:7px 0}
+.hero{background:linear-gradient(135deg,#635bff,#8179ff);color:#fff;border:0}
+.hero h2{font-size:27px;margin:8px 0 18px}
+.btn{background:var(--p);color:#fff;padding:11px 16px;border-radius:11px;font-weight:800}
+.btn.light{background:#fff;color:var(--p)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.stat strong{display:block;font-size:26px;margin:7px 0}
 .title{display:flex;justify-content:space-between;align-items:center;margin:22px 0 11px}
-.form{display:grid;gap:12px}input,select,textarea{width:100%;padding:12px;border:1px solid var(--l);border-radius:10px;background:#fff;outline:0}
+.form{display:grid;gap:12px}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--l);border-radius:10px;background:#fff;outline:0}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tabs{display:flex;gap:7px;margin:15px 0}.tabs button{padding:9px 13px;border-radius:10px;background:#eeeef5;font-weight:700}.tabs button.active{background:var(--p);color:#fff}
-.task{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--l)}.task:last-child{border:0}
-.taskinfo{flex:1}.taskinfo b{display:block}.taskinfo small{color:var(--m)}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--p)}.check{width:35px;height:35px;border-radius:10px;background:#f0efff;color:var(--p);font-weight:900}
+.tabs{display:flex;gap:7px;margin:15px 0}
+.tabs button{padding:9px 13px;border-radius:10px;background:#eeeef5;font-weight:700}
+.tabs button.active{background:var(--p);color:#fff}
+.task{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--l)}
+.task:last-child{border:0}
+.taskinfo{flex:1}
+.taskinfo b{display:block}
+.taskinfo small{color:var(--m)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--p)}
+.check{min-width:35px;height:35px;border-radius:10px;background:#f0efff;color:var(--p);font-weight:900}
 .empty{text-align:center;color:var(--m);padding:28px 10px}
-.mot{display:none;text-align:center}.mot img,.mot video{max-width:100%;max-height:300px;border-radius:14px;margin:14px auto;display:block}.quote{font-size:21px;font-weight:800;padding:25px}
-.preview{max-width:100%;max-height:230px;border-radius:14px;display:none;margin-top:12px}
+.mot{display:none}
+.motbox{position:fixed;z-index:30;inset:8%;background:#fff;border-radius:18px;padding:25px;overflow:auto;box-shadow:0 15px 50px #0003}
+.motbox img,.motbox video{max-width:100%;max-height:300px;border-radius:14px;margin:14px auto;display:block}
+.quote{font-size:21px;font-weight:800;padding:25px}
+.preview{max-width:100%;max-height:260px;border-radius:14px;display:none;margin-top:12px}
+.filebtn{display:block;text-align:center}
 .mobile{display:none}
+
 @media(max-width:800px){
-.side{display:none}.main{margin:0;width:100%;padding:18px 15px 80px}.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}
+.side{display:none}
+.main{margin:0;width:100%;padding:18px 15px 80px}
+.grid{grid-template-columns:1fr 1fr}
+.row{grid-template-columns:1fr}
 .mobile{display:flex;position:fixed;bottom:0;left:0;right:0;height:65px;background:#fff;border-top:1px solid var(--l);z-index:5;justify-content:space-around}
-.mobile button{background:none;color:var(--m);font-size:11px;font-weight:700}.mobile button span{display:block;font-size:20px}.mobile button.active{color:var(--p)}
+.mobile button{background:none;color:var(--m);font-size:11px;font-weight:700}
+.mobile button span{display:block;font-size:20px}
+.mobile button.active{color:var(--p)}
 }
 </style>
 </head>
+
 <body>
 
 <div class="app">
+
 <aside class="side">
- <div class="logo">NE<span>Y</span>VO</div>
- <nav class="nav">
-  <button class="active" data-p="home">⌂ Home</button>
-  <button data-p="schedule">◷ Schedule</button>
-  <button data-p="forget">⚡ Don't Forget</button>
-  <button data-p="food">📷 Food</button>
-  <button data-p="dashboard">🏆 Dashboard</button>
-  <button data-p="world">🌎 World</button>
-  <button data-p="settings">⚙ Settings</button>
- </nav>
+<div class="logo">NE<span>Y</span>VO</div>
+
+<nav class="nav">
+<button class="active" data-p="home">⌂ Home</button>
+<button data-p="schedule">◷ Schedule</button>
+<button data-p="forget">⚡ Don't Forget</button>
+<button data-p="food">📷 Food</button>
+<button data-p="dashboard">🏆 Dashboard</button>
+<button data-p="world">🌎 World</button>
+<button data-p="settings">⚙ Settings</button>
+</nav>
 </aside>
 
 <main class="main">
+
 <header class="top">
- <div><h1 id="hello">Good day 👋</h1><p class="muted" id="date"></p></div>
- <div class="avatar">N</div>
+<div>
+<h1 id="hello">Good day 👋</h1>
+<p class="muted" id="date"></p>
+</div>
+<div class="avatar">N</div>
 </header>
 
+<!-- HOME -->
+
 <section class="page active" id="home">
- <div class="card hero"><small>TODAY</small><h2>Plan your day. Remember what matters.</h2><button class="btn light" onclick="page('schedule')">Open schedule →</button></div>
- <div class="grid">
-  <div class="card stat"><span class="muted">🔥 Streak</span><strong id="streak">0</strong><small>days</small></div>
-  <div class="card stat"><span class="muted">✓ Done</span><strong id="done">0</strong><small>today</small></div>
-  <div class="card stat"><span class="muted">🎯 Discipline</span><strong id="disc">0%</strong><small>today</small></div>
- </div>
- <div class="title"><h3>Today's plan</h3><button class="btn" onclick="page('schedule')">+ Add</button></div>
- <div class="card" id="homeTasks"><div class="empty">No tasks yet.</div></div>
+
+<div class="card hero">
+<small>TODAY</small>
+<h2>Plan your day. Remember what matters.</h2>
+<button class="btn light" onclick="page('schedule')">Open schedule →</button>
+</div>
+
+<div class="grid">
+<div class="card stat">
+<span class="muted">🔥 Streak</span>
+<strong id="streak">0</strong>
+<small>days</small>
+</div>
+
+<div class="card stat">
+<span class="muted">✓ Done</span>
+<strong id="done">0</strong>
+<small>today</small>
+</div>
+
+<div class="card stat">
+<span class="muted">🎯 Discipline</span>
+<strong id="disc">0%</strong>
+<small>today</small>
+</div>
+</div>
+
+<div class="title">
+<h3>Today's plan</h3>
+<button class="btn" onclick="page('schedule')">+ Add</button>
+</div>
+
+<div class="card" id="homeTasks">
+<div class="empty">No tasks yet.</div>
+</div>
+
 </section>
+
+
+<!-- SCHEDULE -->
 
 <section class="page" id="schedule">
- <div class="card">
-  <h2>📅 Schedule</h2><p class="muted">Create a task for today, a week, or a custom period.</p>
-  <div class="tabs">
-   <button class="active" onclick="schedTab(this,'today')">Today</button>
-   <button onclick="schedTab(this,'week')">Week</button>
-   <button onclick="schedTab(this,'repeat')">Repeating</button>
-  </div>
-  <div class="form">
-   <input id="tn" placeholder="What do you need to do?">
-   <div class="row"><input id="tt" type="time"><select id="rtype"><option value="none">No repeat</option><option value="daily">Every day</option><option value="weekly">Every week</option></select></div>
-   <div class="row"><label class="muted">Start<input id="start" type="date"></label><label class="muted">End<input id="end" type="date"></label></div>
-   <label class="muted">Motivation for this whole schedule
-    <select id="men" onchange="motType()"><option value="off">OFF</option><option value="quote">Quote</option><option value="photo">Photo</option><option value="video">Video</option></select>
-   </label>
-   <div id="motInput"></div>
-   <button class="btn" onclick="addTask()">Add schedule</button>
-  </div>
- </div>
- <div class="title"><h3 id="schedTitle">Today's tasks</h3></div>
- <div class="card" id="list"><div class="empty">No tasks yet.</div></div>
+
+<div class="card">
+
+<h2>📅 Schedule</h2>
+<p class="muted">Create a task for today, a week, or a repeating schedule.</p>
+
+<div class="tabs">
+<button class="active" onclick="schedTab(this,'today')">Today</button>
+<button onclick="schedTab(this,'week')">Week</button>
+<button onclick="schedTab(this,'repeat')">Repeating</button>
+</div>
+
+<div class="form">
+
+<input id="tn" placeholder="What do you need to do?">
+
+<div class="row">
+<input id="tt" type="time">
+
+<select id="rtype">
+<option value="none">No repeat</option>
+<option value="daily">Every day</option>
+<option value="weekly">Every week</option>
+</select>
+</div>
+
+<div class="row">
+<label class="muted">
+Start
+<input id="start" type="date">
+</label>
+
+<label class="muted">
+End
+<input id="end" type="date">
+</label>
+</div>
+
+<label class="muted">
+Motivation for this whole schedule
+
+<select id="men" onchange="motType()">
+<option value="off">OFF</option>
+<option value="quote">Quote</option>
+<option value="photo">Photo</option>
+<option value="video">Video</option>
+</select>
+</label>
+
+<div id="motInput"></div>
+
+<button class="btn" onclick="addTask()">Add schedule</button>
+
+</div>
+</div>
+
+<div class="title">
+<h3 id="schedTitle">Today's tasks</h3>
+</div>
+
+<div class="card" id="list">
+<div class="empty">No tasks yet.</div>
+</div>
+
 </section>
+
+
+<!-- DON'T FORGET -->
 
 <section class="page" id="forget">
- <div class="card hero"><small>DON'T FORGET</small><h2>Keep important things in your mind.</h2><p>Reminders stay active until you complete or skip them.</p></div>
- <div class="card"><div class="form"><input id="fn" placeholder="e.g. Pay someone before 7 PM"><input id="ft" type="datetime-local"><button class="btn" onclick="addForget()">Create reminder</button></div></div>
- <div class="card" id="flist"><div class="empty">No reminders.</div></div>
+
+<div class="card hero">
+<small>DON'T FORGET</small>
+<h2>Keep important things in your mind.</h2>
+<p>Reminders stay active until you complete or skip them.</p>
+</div>
+
+<div class="card">
+<div class="form">
+<input id="fn" placeholder="e.g. Pay someone before 7 PM">
+<input id="ft" type="datetime-local">
+<button class="btn" onclick="addForget()">Create reminder</button>
+</div>
+</div>
+
+<div class="card" id="flist">
+<div class="empty">No reminders.</div>
+</div>
+
 </section>
+
+
+<!-- FOOD -->
 
 <section class="page" id="food">
- <div class="card hero"><small>FOOD AI</small><h2>Understand your meal.</h2><p>Use a camera or gallery photo and describe the food roughly.</p></div>
- <div class="card">
-  <div class="form">
-   <input id="camera" type="file" accept="image/*" capture="environment" onchange="photo(this)">
-   <label class="btn" style="text-align:center">🖼️ Choose from gallery<input type="file" accept="image/*" hidden onchange="photo(this)"></label>
-   <img id="photoPreview" class="preview">
-   <textarea id="fd" rows="4" placeholder="Example: rice, dal, vegetables and curd"></textarea>
-   <button class="btn" onclick="foodAI()">🤖 Analyze with NEYVO AI</button>
-  </div>
-  <div id="foodResult"></div>
- </div>
+
+<div class="card hero">
+<small>FOOD AI</small>
+<h2>Understand your meal.</h2>
+<p>Take a photo or upload one from your device.</p>
+</div>
+
+<div class="card">
+
+<div class="form">
+
+<!-- PHONE CAMERA -->
+<label class="btn filebtn">
+📷 Take Photo
+<input
+id="foodCamera"
+type="file"
+accept="image/*"
+capture="environment"
+hidden
+onchange="photo(this)">
+</label>
+
+<!-- PHONE GALLERY + LAPTOP FILES -->
+<label class="btn filebtn">
+🖼️ Upload Photo
+<input
+id="foodFile"
+type="file"
+accept="image/*"
+hidden
+onchange="photo(this)">
+</label>
+
+<img id="photoPreview" class="preview">
+
+<textarea
+id="fd"
+rows="4"
+placeholder="Optional: describe the food, for example rice, dal, vegetables and curd">
+</textarea>
+
+<button class="btn" onclick="foodAI()">
+🤖 Analyze with NEYVO AI
+</button>
+
+</div>
+
+<div id="foodResult"></div>
+
+</div>
+
 </section>
+
+
+<!-- DASHBOARD -->
 
 <section class="page" id="dashboard">
- <div class="card"><h2>🏆 Dashboard</h2><p class="muted">Your consistency and progress.</p></div>
- <div class="grid">
-  <div class="card stat"><span class="muted">🔥 Streak</span><strong id="ds">0</strong></div>
-  <div class="card stat"><span class="muted">🎯 Discipline</span><strong id="dd">0%</strong></div>
-  <div class="card stat"><span class="muted">✓ Completed</span><strong id="dc">0</strong></div>
- </div>
+
+<div class="card">
+<h2>🏆 Dashboard</h2>
+<p class="muted">Your consistency and progress.</p>
+</div>
+
+<div class="grid">
+
+<div class="card stat">
+<span class="muted">🔥 Streak</span>
+<strong id="ds">0</strong>
+</div>
+
+<div class="card stat">
+<span class="muted">🎯 Discipline</span>
+<strong id="dd">0%</strong>
+</div>
+
+<div class="card stat">
+<span class="muted">✓ Completed</span>
+<strong id="dc">0</strong>
+</div>
+
+</div>
 </section>
+
+
+<!-- WORLD -->
 
 <section class="page" id="world">
- <div class="card"><h2>🌎 World</h2><p class="muted">Daily public discipline ranking.</p></div>
- <div class="card"><div class="task"><b>#1</b><div class="taskinfo"><b>NEYVO User</b><small>Discipline</small></div><b>100%</b></div><div class="task"><b>#2</b><div class="taskinfo"><b>NEYVO User</b><small>Discipline</small></div><b>94%</b></div><div class="task"><b>#3</b><div class="taskinfo"><b>NEYVO User</b><small>Discipline</small></div><b>91%</b></div></div>
+
+<div class="card">
+<h2>🌎 World</h2>
+<p class="muted">Daily public discipline ranking.</p>
+</div>
+
+<div class="card">
+
+<div class="task">
+<b>#1</b>
+<div class="taskinfo">
+<b>NEYVO User</b>
+<small>Discipline</small>
+</div>
+<b>100%</b>
+</div>
+
+<div class="task">
+<b>#2</b>
+<div class="taskinfo">
+<b>NEYVO User</b>
+<small>Discipline</small>
+</div>
+<b>94%</b>
+</div>
+
+<div class="task">
+<b>#3</b>
+<div class="taskinfo">
+<b>NEYVO User</b>
+<small>Discipline</small>
+</div>
+<b>91%</b>
+</div>
+
+</div>
 </section>
 
+
+<!-- SETTINGS -->
+
 <section class="page" id="settings">
- <div class="card"><h2>⚙ Settings</h2>
-  <div class="task"><div class="taskinfo"><b>🔔 Notifications</b><small>Reminder notifications</small></div><button class="check" onclick="toggle(this)">ON</button></div>
-  <div class="task"><div class="taskinfo"><b>🔊 Sound</b><small>Reminder tone</small></div><button class="check" onclick="toggle(this)">ON</button></div>
-  <div class="task"><div class="taskinfo"><b>📳 Vibration</b><small>Vibrate reminders</small></div><button class="check" onclick="toggle(this)">ON</button></div>
-  <div class="task"><div class="taskinfo"><b>🌍 Country</b><small>Regional food context</small></div><select style="width:130px"><option>India</option><option>USA</option><option>UK</option><option>Other</option></select></div>
- </div>
+
+<div class="card">
+<h2>⚙ Settings</h2>
+
+<div class="task">
+<div class="taskinfo">
+<b>🔔 Notifications</b>
+<small>Reminder notifications</small>
+</div>
+<button class="check" onclick="toggle(this)">ON</button>
+</div>
+
+<div class="task">
+<div class="taskinfo">
+<b>🔊 Sound</b>
+<small>Reminder tone</small>
+</div>
+<button class="check" onclick="toggle(this)">ON</button>
+</div>
+
+<div class="task">
+<div class="taskinfo">
+<b>📳 Vibration</b>
+<small>Vibrate reminders</small>
+</div>
+<button class="check" onclick="toggle(this)">ON</button>
+</div>
+
+<div class="task">
+<div class="taskinfo">
+<b>🌍 Country</b>
+<small>Regional food context</small>
+</div>
+
+<select style="width:130px">
+<option>India</option>
+<option>USA</option>
+<option>UK</option>
+<option>Other</option>
+</select>
+</div>
+
+</div>
 </section>
+
 </main>
 </div>
 
+
+<!-- MOBILE NAV -->
+
 <nav class="mobile">
- <button class="active" data-p="home"><span>⌂</span>Home</button><button data-p="schedule"><span>◷</span>Schedule</button><button data-p="forget"><span>⚡</span>Forget</button><button data-p="food"><span>📷</span>Food</button><button data-p="dashboard"><span>🏆</span>Progress</button>
+
+<button class="active" data-p="home">
+<span>⌂</span>Home
+</button>
+
+<button data-p="schedule">
+<span>◷</span>Schedule
+</button>
+
+<button data-p="forget">
+<span>⚡</span>Forget
+</button>
+
+<button data-p="food">
+<span>📷</span>Food
+</button>
+
+<button data-p="dashboard">
+<span>🏆</span>Progress
+</button>
+
 </nav>
+
+
+<!-- MOTIVATION POPUP -->
 
 <div class="mot" id="motScreen"></div>
 
+
 <script>
-let tasks=JSON.parse(localStorage.neyvoTasks||"[]"),forgets=JSON.parse(localStorage.neyvoForgets||"[]");
-const $=id=>document.getElementById(id),save=()=>{localStorage.neyvoTasks=JSON.stringify(tasks);localStorage.neyvoForgets=JSON.stringify(forgets)};
-$("date").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
-function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id==id));document.querySelectorAll("[data-p]").forEach(x=>x.classList.toggle("active",x.dataset.p==id));scrollTo(0,0)}
-document.querySelectorAll("[data-p]").forEach(x=>x.onclick=()=>page(x.dataset.p));
+let tasks=JSON.parse(localStorage.neyvoTasks||"[]");
+let forgets=JSON.parse(localStorage.neyvoForgets||"[]");
+let currentTab="today";
 
-function schedTab(b,type){document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("schedTitle").textContent=type=="week"?"This week's tasks":type=="repeat"?"Repeating tasks":"Today's tasks";render(type)}
+const $=id=>document.getElementById(id);
 
-function motType(){let t=$("men").value,box=$("motInput");box.innerHTML=t=="quote"?'<textarea id="mv" placeholder="Your motivational message"></textarea>':t=="photo"||t=="video"?'<input id="mv" type="file" accept="'+(t=="photo"?"image/*":"video/*")+'">':""}
+function save(){
+localStorage.neyvoTasks=JSON.stringify(tasks);
+localStorage.neyvoForgets=JSON.stringify(forgets);
+}
+
+$("date").textContent=new Date().toLocaleDateString(undefined,{
+weekday:"long",
+month:"long",
+day:"numeric",
+year:"numeric"
+});
+
+
+/* PAGE NAVIGATION */
+
+function page(id){
+
+document.querySelectorAll(".page")
+.forEach(x=>x.classList.toggle("active",x.id==id));
+
+document.querySelectorAll("[data-p]")
+.forEach(x=>x.classList.toggle("active",x.dataset.p==id));
+
+scrollTo(0,0);
+}
+
+document.querySelectorAll("[data-p]")
+.forEach(x=>x.onclick=()=>page(x.dataset.p));
+
+
+/* SCHEDULE TABS */
+
+function schedTab(b,type){
+
+currentTab=type;
+
+document.querySelectorAll(".tabs button")
+.forEach(x=>x.classList.remove("active"));
+
+b.classList.add("active");
+
+$("schedTitle").textContent=
+type=="week"?"This week's tasks":
+type=="repeat"?"Repeating tasks":
+"Today's tasks";
+
+render(type);
+}
+
+
+/* MOTIVATION */
+
+function motType(){
+
+let t=$("men").value;
+let box=$("motInput");
+
+if(t=="quote")
+box.innerHTML=
+'<textarea id="mv" placeholder="Your motivational message"></textarea>';
+
+else if(t=="photo")
+box.innerHTML=
+'<input id="mv" type="file" accept="image/*">';
+
+else if(t=="video")
+box.innerHTML=
+'<input id="mv" type="file" accept="video/*">';
+
+else box.innerHTML="";
+}
+
+
+/* ADD SCHEDULE */
 
 function addTask(){
- let name=$("tn").value.trim();if(!name)return alert("Enter a task.");
- let t={id:Date.now(),name,time:$("tt").value,repeat:$("rtype").value,start:$("start").value,end:$("end").value,mot:$("men").value,done:false,skip:false};
- if(t.mot=="quote")t.mv=$("mv")?.value||"Keep going. You can do this!";
- else if(t.mot!="off")t.mv=$("mv")?.files?.[0]?.name||"";
- tasks.push(t);save();render();$("tn").value="";alert("Schedule added.");
+
+let name=$("tn").value.trim();
+
+if(!name)
+return alert("Enter a task.");
+
+let selectedType=currentTab;
+
+let t={
+id:Date.now(),
+name:name,
+time:$("tt").value,
+repeat:$("rtype").value,
+start:$("start").value,
+end:$("end").value,
+scheduleType:selectedType,
+mot:$("men").value,
+done:false,
+skip:false
+};
+
+if(t.mot=="quote")
+t.mv=$("mv")?.value||"Keep going. You can do this!";
+
+else if(t.mot!="off")
+t.mv=$("mv")?.files?.[0]||null;
+
+tasks.push(t);
+
+save();
+render(currentTab);
+
+$("tn").value="";
+$("tt").value="";
+$("start").value="";
+$("end").value="";
+$("motInput").innerHTML="";
+$("men").value="off";
+
+alert("Schedule added.");
 }
 
-function valid(t){
- let today=new Date().toISOString().slice(0,10);
- return (!t.start||today>=t.start)&&(!t.end||today<=t.end);
+
+/* DATE CHECK */
+
+function today(){
+
+return new Date().toISOString().slice(0,10);
+
 }
 
-function render(type="today"){
- let a=tasks.filter(valid);if(type=="repeat")a=a.filter(x=>x.repeat!="none");
- let html=a.length?a.map((t,i)=>`<div class="task"><div class="dot"></div><div class="taskinfo"><b>${esc(t.name)}</b><small>${t.time||"Any time"} · ${t.repeat}</small></div><button class="check" onclick="finish(${tasks.indexOf(t)})">${t.done?"✓":"○"}</button><button class="check" onclick="skip(${tasks.indexOf(t)})">→</button></div>`).join(""):'<div class="empty">No tasks here.</div>';
- $("list").innerHTML=html;$("homeTasks").innerHTML=html;
- let d=tasks.filter(x=>x.done).length;$("done").textContent=d;$("dc").textContent=d;$("dd").textContent=$("disc").textContent=d?Math.round(d/tasks.length*100)+"%":"0%";$("ds").textContent=$("streak").textContent=d?1:0;
+function validDate(t){
+
+let d=today();
+
+return (!t.start||d>=t.start)&&
+(!t.end||d<=t.end);
+
 }
-function finish(i){tasks[i].done=!tasks[i].done;save();render()}
-function skip(i){let t=tasks[i];if(t.mot=="off"){t.skip=true;save();render();return}showMot(t,i)}
+
+
+/* TASK FILTER */
+
+function getTasks(type){
+
+if(type=="today")
+
+return tasks.filter(t=>
+t.scheduleType=="today" &&
+validDate(t)
+);
+
+if(type=="week")
+
+return tasks.filter(t=>
+t.scheduleType=="week" &&
+validDate(t)
+);
+
+if(type=="repeat")
+
+return tasks.filter(t=>
+t.scheduleType=="repeat" ||
+(t.scheduleType=="today"&&t.repeat!="none") ||
+(t.scheduleType=="week"&&t.repeat!="none")
+);
+
+return [];
+}
+
+
+/* RENDER */
+
+function render(type=currentTab){
+
+let a=getTasks(type);
+
+let html=a.length?
+
+a.map(t=>{
+
+let i=tasks.indexOf(t);
+
+return `
+<div class="task">
+
+<div class="dot"></div>
+
+<div class="taskinfo">
+<b>${esc(t.name)}</b>
+<small>
+${t.time||"Any time"} ·
+${t.repeat=="none"?"No repeat":t.repeat}
+</small>
+</div>
+
+<button
+class="check"
+title="Complete"
+onclick="finish(${i})">
+${t.done?"✓":"○"}
+</button>
+
+<button
+class="check"
+title="Skip"
+onclick="skip(${i})">
+→
+</button>
+
+</div>`;
+
+}).join("")
+
+:'<div class="empty">No tasks here.</div>';
+
+$("list").innerHTML=html;
+
+
+/* HOME MUST ONLY SHOW TODAY'S TASKS */
+
+let home=getTasks("today");
+
+$("homeTasks").innerHTML=home.length?
+
+home.map(t=>{
+
+let i=tasks.indexOf(t);
+
+return `
+<div class="task">
+
+<div class="dot"></div>
+
+<div class="taskinfo">
+<b>${esc(t.name)}</b>
+<small>${t.time||"Any time"}</small>
+</div>
+
+<button
+class="check"
+onclick="finish(${i})">
+${t.done?"✓":"○"}
+</button>
+
+<button
+class="check"
+onclick="skip(${i})">
+→
+</button>
+
+</div>`;
+
+}).join("")
+
+:'<div class="empty">No tasks yet.</div>';
+
+
+let total=tasks.length;
+let d=tasks.filter(x=>x.done).length;
+
+$("done").textContent=d;
+$("dc").textContent=d;
+
+let percent=total?
+Math.round(d/total*100):0;
+
+$("disc").textContent=percent+"%";
+$("dd").textContent=percent+"%";
+
+$("streak").textContent=d?1:0;
+$("ds").textContent=d?1:0;
+
+}
+
+
+/* COMPLETE */
+
+function finish(i){
+
+tasks[i].done=!tasks[i].done;
+tasks[i].skip=false;
+
+save();
+render(currentTab);
+
+}
+
+
+/* SKIP */
+
+function skip(i){
+
+let t=tasks[i];
+
+if(t.mot=="off"){
+
+t.skip=true;
+save();
+render(currentTab);
+return;
+
+}
+
+showMot(t,i);
+
+}
+
+
+/* MOTIVATION SCREEN */
+
 function showMot(t,i){
- let box=$("motScreen"),content=t.mot=="quote"?`<div class="quote">${esc(t.mv||"Keep going. You can do this!")}</div>`:`<p class="muted">Your selected motivation</p><p style="padding:25px">📷/🎬 ${esc(t.mv||"Motivation")}</p>`;
- box.innerHTML=`<div class="card" style="position:fixed;z-index:30;inset:15%;background:white"><h2>💪 Keep going</h2>${content}<button class="btn" onclick="closeMot()">Skip Motivation</button> <button class="btn" onclick="skipTask(${i})">Skip Task</button><button class="btn" onclick="finishMot(${i})">Complete</button></div>`;box.style.display="block"
+
+let content="";
+
+if(t.mot=="quote"){
+
+content=
+`<div class="quote">${esc(t.mv)}</div>`;
+
+}else if(t.mot=="photo" && t.mv){
+
+let url=URL.createObjectURL(t.mv);
+
+content=
+`<img src="${url}">`;
+
+}else if(t.mot=="video" && t.mv){
+
+let url=URL.createObjectURL(t.mv);
+
+content=
+`<video src="${url}" controls></video>`;
+
+}else{
+
+content=
+`<p class="muted">Your selected motivation</p>`;
+
 }
-function closeMot(){$("motScreen").style.display="none"}
-function skipTask(i){tasks[i].skip=true;closeMot();save();render()}
-function finishMot(i){tasks[i].done=true;closeMot();save();render()}
 
-function addForget(){let n=$("fn").value.trim();if(!n)return alert("Enter a reminder.");forgets.push({n,t:$("ft").value,done:false});save();renderF();$("fn").value=""}
-function renderF(){$("flist").innerHTML=forgets.length?forgets.map((x,i)=>`<div class="task"><div class="dot"></div><div class="taskinfo"><b>${esc(x.n)}</b><small>${x.t?new Date(x.t).toLocaleString():"No time"}</small></div><button class="check" onclick="forgetDone(${i})">${x.done?"✓":"○"}</button><button class="check" onclick="forgetSkip(${i})">×</button></div>`).join(""):'<div class="empty">No reminders.</div>'}
-function forgetDone(i){forgets[i].done=!forgets[i].done;save();renderF()}function forgetSkip(i){forgets.splice(i,1);save();renderF()}
 
-function photo(x){let f=x.files[0];if(!f)return;let r=new FileReader();r.onload=e=>{$("photoPreview").src=e.target.result;$("photoPreview").style.display="block"};r.readAsDataURL(f)}
-function foodAI(){let d=$("fd").value.trim();if(!d&&!$("photoPreview").src)return alert("Add a photo or food description.");$("foodResult").innerHTML='<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b><p class="muted" style="margin-top:8px">Real AI food recognition will be securely connected here. It will estimate protein, carbohydrates and fiber from the photo, palm reference and description.</p></div>'}
-function toggle(b){b.textContent=b.textContent=="ON"?"OFF":"ON"}
-function esc(s){return String(s||"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
-render();renderF();
+$("motScreen").innerHTML=`
+
+<div class="motbox">
+
+<h2>💪 Keep going</h2>
+
+${content}
+
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+
+<button class="btn" onclick="skipMotivation(${i})">
+Skip Motivation
+</button>
+
+<button class="btn" onclick="skipTask(${i})">
+Skip Task
+</button>
+
+<button class="btn" onclick="finishMot(${i})">
+Complete
+</button>
+
+</div>
+
+</div>`;
+
+$("motScreen").style.display="block";
+
+}
+
+
+/* SKIP ONLY MOTIVATION */
+
+function skipMotivation(i){
+
+closeMot();
+
+alert("Motivation skipped. The task is still waiting for you.");
+
+}
+
+
+/* SKIP TASK */
+
+function skipTask(i){
+
+tasks[i].skip=true;
+
+closeMot();
+save();
+render(currentTab);
+
+}
+
+
+/* COMPLETE AFTER MOTIVATION */
+
+function finishMot(i){
+
+tasks[i].done=true;
+tasks[i].skip=false;
+
+closeMot();
+save();
+render(currentTab);
+
+}
+
+
+function closeMot(){
+
+$("motScreen").style.display="none";
+$("motScreen").innerHTML="";
+
+}
+
+
+/* DON'T FORGET */
+
+function addForget(){
+
+let n=$("fn").value.trim();
+
+if(!n)
+return alert("Enter a reminder.");
+
+forgets.push({
+n:n,
+t:$("ft").value,
+done:false
+});
+
+save();
+renderF();
+
+$("fn").value="";
+$("ft").value="";
+
+}
+
+
+function renderF(){
+
+$("flist").innerHTML=forgets.length?
+
+forgets.map((x,i)=>`
+
+<div class="task">
+
+<div class="dot"></div>
+
+<div class="taskinfo">
+<b>${esc(x.n)}</b>
+<small>
+${x.t?new Date(x.t).toLocaleString():"No time"}
+</small>
+</div>
+
+<button class="check"
+onclick="forgetDone(${i})">
+${x.done?"✓":"○"}
+</button>
+
+<button class="check"
+onclick="forgetSkip(${i})">
+×
+</button>
+
+</div>
+
+`).join("")
+
+:'<div class="empty">No reminders.</div>';
+
+}
+
+
+function forgetDone(i){
+
+forgets[i].done=!forgets[i].done;
+save();
+renderF();
+
+}
+
+
+function forgetSkip(i){
+
+forgets.splice(i,1);
+save();
+renderF();
+
+}
+
+
+/* FOOD PHOTO */
+
+function photo(input){
+
+let f=input.files[0];
+
+if(!f)return;
+
+if(!f.type.startsWith("image/"))
+return alert("Please select an image.");
+
+let r=new FileReader();
+
+r.onload=e=>{
+
+$("photoPreview").src=e.target.result;
+$("photoPreview").style.display="block";
+
+};
+
+r.readAsDataURL(f);
+
+}
+
+
+/* FOOD AI */
+
+function foodAI(){
+
+let description=$("fd").value.trim();
+let image=$("photoPreview").src;
+
+if(!description && !image)
+return alert("Take or upload a food photo, or describe the food.");
+
+$("foodResult").innerHTML=`
+
+<div class="card" style="margin-top:15px">
+
+<b>🤖 NEYVO AI</b>
+
+<p class="muted" style="margin-top:8px">
+
+Photo received successfully.
+Real AI food recognition can be connected here to identify the food and provide general nutrition information.
+
+</p>
+
+</div>`;
+
+}
+
+
+/* SETTINGS */
+
+function toggle(b){
+
+b.textContent=
+b.textContent=="ON"?"OFF":"ON";
+
+}
+
+
+/* SECURITY */
+
+function esc(s){
+
+return String(s||"").replace(/[&<>"']/g,x=>({
+
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+
+}[x]));
+
+}
+
+
+/* START */
+
+render("today");
+renderF();
+
 </script>
+
 </body>
 </html>
