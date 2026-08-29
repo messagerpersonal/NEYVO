@@ -240,26 +240,60 @@ $("flist").innerHTML=forgets.length?forgets.map((x,i)=>`<div class="task"><i cla
 function forgetDone(i){forgets[i].done=!forgets[i].done;save();renderF()}
 function forgetSkip(i){forgets.splice(i,1);save();renderF()}
 
+let foodImage="",foodMime="image/jpeg";
+
 function photo(x){
-let f=x.files[0];if(!f||!f.type.startsWith("image/"))return;
-let r=new FileReader();r.onload=e=>{$("photoPreview").src=e.target.result;$("photoPreview").style.display="block"};r.readAsDataURL(f)
+ let f=x.files[0];
+ if(!f||!f.type.startsWith("image/"))return;
+ foodMime=f.type;
+ let r=new FileReader();
+ r.onload=e=>{
+  foodImage=e.target.result.split(",")[1];
+  $("photoPreview").src=e.target.result;
+  $("photoPreview").style.display="block";
+ };
+ r.readAsDataURL(f);
 }
+
 async function foodAI(){
- let d=$("fd").value.trim(),src=$("photoPreview").src;
- if(!d&&!src)return alert("Take or upload a photo, or describe the food.");
- $("foodResult").innerHTML='<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b><p class="muted">Analyzing your food...</p></div>';
+ let d=$("fd").value.trim();
+ if(!foodImage&&!d)return alert("Take or upload a photo, or describe the food.");
+
+ $("foodResult").innerHTML=
+ '<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b><p class="muted">Analyzing your food...</p></div>';
+
  try{
-  let image=src&&src.startsWith("data:")?src.split(",")[1]:"";
   let r=await fetch("https://neyvo-food-ai.creatermsg.workers.dev",{
-   method:"POST",headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({image,description:d})
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    image:foodImage,
+    mime:foodMime,
+    description:d
+   })
   });
+
   let x=await r.json();
-  if(!r.ok||x.error)throw Error(x.error||"AI error");
-  $("foodResult").innerHTML='<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b><p style="margin-top:8px;white-space:pre-wrap">'+esc(x.result)+'</p></div>';
+
+  if(!r.ok){
+   $("foodResult").innerHTML=
+    '<div class="card" style="margin-top:15px"><b>⚠️ AI Error</b><p class="muted" style="margin-top:8px">'+
+    esc(x.detail||x.error||("Request failed: "+r.status))+
+    '</p></div>';
+   return;
+  }
+
+  $("foodResult").innerHTML=
+   '<div class="card" style="margin-top:15px"><b>🤖 NEYVO AI</b>'+
+   '<p style="margin-top:8px;white-space:pre-wrap">'+esc(x.result||"No result returned.")+
+   '</p></div>';
+
  }catch(e){
-  $("foodResult").innerHTML='<div class="card" style="margin-top:15px"><b>⚠️ Food AI</b><p class="muted">Could not analyze right now. Please try again.</p></div>';
+  $("foodResult").innerHTML=
+   '<div class="card" style="margin-top:15px"><b>⚠️ Connection Error</b>'+
+   '<p class="muted" style="margin-top:8px">'+esc(e.message)+'</p></div>';
  }
+
 }
 function toggle(b){b.textContent=b.textContent=="ON"?"OFF":"ON"}
 function esc(s){return String(s||"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
