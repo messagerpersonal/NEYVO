@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#635bff">
+<meta name="description" content="NEYVO — Plan. Remember. Improve.">
+<title>NEYVO</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+ --p:#635bff;--p2:#7c72ff;--bg:#f6f7fb;--card:#fff;
+ --text:#171927;--muted:#74788b;--line:#e8e9f0;
+ --good:#20b26b;--danger:#e05252;
+}
+body{
+ font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ background:var(--bg);color:var(--text);min-height:100vh;
+}
+button{font:inherit;cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}
+.sidebar{
+ width:240px;background:#fff;border-right:1px solid var(--line);
+ padding:24px 14px;position:fixed;inset:0 auto 0 0;
+ display:flex;flex-direction:column;z-index:10;
+}
+.logo{font-size:27px;font-weight:900;letter-spacing:-1px;padding:0 12px 30px}
+.logo span{color:var(--p)}
+.nav{display:grid;gap:6px}
+.nav button{
+ background:transparent;color:var(--muted);text-align:left;
+ padding:13px 14px;border-radius:12px;font-weight:700;
+}
+.nav button:hover,.nav button.active{background:#f0efff;color:var(--p)}
+.tag{margin-top:auto;background:#f5f4ff;border-radius:16px;padding:15px;color:var(--p);font-size:13px}
+.main{margin-left:240px;width:calc(100% - 240px);padding:28px;max-width:1500px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:25px}
+.greeting h1{font-size:28px;letter-spacing:-.7px}
+.greeting p{color:var(--muted);margin-top:5px}
+.avatar{
+ width:42px;height:42px;border-radius:50%;background:var(--p);
+ color:#fff;display:grid;place-items:center;font-weight:800;
+}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{
+ background:var(--card);border:1px solid var(--line);
+ border-radius:18px;padding:20px;
+ box-shadow:0 5px 20px #1b1d2a06;
+}
+.hero{
+ background:linear-gradient(135deg,#635bff,#8179ff);
+ color:white;border:0;min-height:190px;
+ display:flex;flex-direction:column;justify-content:space-between;
+}
+.hero small{opacity:.8}.hero h2{font-size:27px;max-width:500px}
+.btn{
+ background:var(--p);color:white;padding:11px 16px;border-radius:11px;font-weight:800;
+}
+.btn.light{background:#fff;color:var(--p)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.stat strong{display:block;font-size:27px;margin-top:8px}.muted{color:var(--muted);font-size:14px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:25px 0 12px}
+.task{display:flex;align-items:center;gap:13px;padding:14px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border:0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--p);flex:none}
+.task-info{flex:1}.task-info b{display:block}.task-info span{font-size:13px;color:var(--muted)}
+.check{
+ width:34px;height:34px;border-radius:10px;background:#f0efff;color:var(--p);
+ font-weight:900;
+}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.quick button{
+ background:#fff;border:1px solid var(--line);padding:17px;border-radius:15px;
+ text-align:left;font-weight:800;color:var(--text);
+}
+.quick button span{display:block;font-size:22px;margin-bottom:8px}
+.empty{text-align:center;padding:45px 15px;color:var(--muted)}
+.form{display:grid;gap:13px;max-width:600px}
+input,select,textarea{
+ width:100%;padding:13px 14px;border:1px solid var(--line);
+ border-radius:11px;background:#fff;outline:0;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--p)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mobile-nav{display:none}
+
+@media(max-width:800px){
+ .sidebar{display:none}
+ .main{margin:0;width:100%;padding:18px 16px 85px}
+ .grid{grid-template-columns:1fr}
+ .stats{grid-template-columns:repeat(3,1fr)}
+ .quick{grid-template-columns:1fr 1fr}
+ .top{margin-bottom:18px}
+ .greeting h1{font-size:23px}
+ .mobile-nav{
+  display:flex;position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid var(--line);
+  height:67px;z-index:20;justify-content:space-around;
+ }
+ .mobile-nav button{background:transparent;color:var(--muted);font-size:11px;font-weight:700}
+ .mobile-nav button span{display:block;font-size:21px;margin-bottom:2px}
+ .mobile-nav button.active{color:var(--p)}
+ .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<aside class="sidebar">
+ <div class="logo">NE<span>Y</span>VO</div>
+
+ <nav class="nav">
+  <button class="active" data-page="home">⌂ &nbsp; Home</button>
+  <button data-page="schedule">◷ &nbsp; Schedule</button>
+  <button data-page="forget">⚡ &nbsp; Don't Forget</button>
+  <button data-page="food">◉ &nbsp; Food</button>
+  <button data-page="dashboard">♙ &nbsp; Dashboard</button>
+  <button data-page="world">◎ &nbsp; World</button>
+  <button data-page="settings">⚙ &nbsp; Settings</button>
+ </nav>
+
+ <div class="tag"><b>NEYVO</b><br>Plan. Remember. Improve.</div>
+</aside>
+
+<main class="main">
+
+<header class="top">
+ <div class="greeting">
+  <h1 id="title">Good day 👋</h1>
+  <p id="date"></p>
+ </div>
+ <div class="avatar">N</div>
+</header>
+
+<!-- HOME -->
+<section class="page active" id="home">
+ <div class="card hero">
+  <small>TODAY</small>
+  <h2>Make today count, one task at a time.</h2>
+  <div><button class="btn light" onclick="showPage('schedule')">View schedule →</button></div>
+ </div>
+
+ <div class="stats">
+  <div class="card stat"><span class="muted">🔥 Streak</span><strong>0</strong><span class="muted">days</span></div>
+  <div class="card stat"><span class="muted">✓ Completed</span><strong id="homeDone">0</strong><span class="muted">today</span></div>
+  <div class="card stat"><span class="muted">🎯 Discipline</span><strong>0%</strong><span class="muted">today</span></div>
+ </div>
+
+ <div class="section-title"><h3>Today's plan</h3><button class="btn" onclick="showPage('schedule')">+ Add</button></div>
+
+ <div class="card" id="homeTasks">
+  <div class="empty">No tasks yet.<br>Add your first task from Schedule.</div>
+ </div>
+
+ <div class="section-title"><h3>Quick actions</h3></div>
+ <div class="quick">
+  <button onclick="showPage('schedule')"><span>📅</span>Add schedule</button>
+  <button onclick="showPage('forget')"><span>⚡</span>Don't forget</button>
+  <button onclick="showPage('food')"><span>📸</span>Food journal</button>
+ </div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="page" id="schedule">
+ <div class="card">
+  <h2>📅 Schedule</h2>
+  <p class="muted" style="margin:7px 0 20px">Build your day your way.</p>
+
+  <div class="form">
+   <input id="taskName" placeholder="What do you need to do?">
+   <div class="row">
+    <input id="taskTime" type="time">
+    <select id="taskType">
+     <option>Task</option><option>Study</option><option>Work</option>
+     <option>Exercise</option><option>Meal</option><option>Personal</option>
+    </select>
+   </div>
+   <button class="btn" onclick="addTask()">Add to today's schedule</button>
+  </div>
+ </div>
+
+ <div class="section-title"><h3>Today's tasks</h3></div>
+ <div class="card" id="scheduleList">
+  <div class="empty">Your schedule is empty.</div>
+ </div>
+</section>
+
+<!-- DON'T FORGET -->
+<section class="page" id="forget">
+ <div class="card hero">
+  <small>DON'T FORGET</small>
+  <h2>Important things shouldn't slip your mind.</h2>
+  <button class="btn light" onclick="document.getElementById('forgetInput').focus()">+ Add reminder</button>
+ </div>
+
+ <div class="section-title"><h3>Important reminders</h3></div>
+ <div class="card">
+  <div class="form">
+   <input id="forgetInput" placeholder="e.g. Pay electricity bill">
+   <input id="forgetTime" type="datetime-local">
+   <button class="btn" onclick="addForget()">Create reminder</button>
+  </div>
+  <div id="forgetList" style="margin-top:20px"></div>
+ </div>
+</section>
+
+<!-- FOOD -->
+<section class="page" id="food">
+ <div class="card hero">
+  <small>FOOD JOURNAL</small>
+  <h2>Understand what you're eating.</h2>
+  <p style="opacity:.85">Take a meal photo and describe what's on the plate.</p>
+ </div>
+
+ <div class="section-title"><h3>Food analysis</h3></div>
+ <div class="card">
+  <div class="form">
+   <input type="file" accept="image/*" capture="environment" id="foodPhoto">
+   <textarea id="foodDescription" rows="4" placeholder="Describe roughly what is in the meal..."></textarea>
+   <button class="btn" onclick="analyzeFood()">Analyze meal</button>
+  </div>
+  <div id="foodResult"></div>
+ </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="page" id="dashboard">
+ <div class="card">
+  <h2>🏆 Your Dashboard</h2>
+  <p class="muted" style="margin-top:6px">Your progress at a glance.</p>
+ </div>
+
+ <div class="stats">
+  <div class="card stat"><span class="muted">🔥 Streak</span><strong>0</strong><span class="muted">days</span></div>
+  <div class="card stat"><span class="muted">📈 Discipline</span><strong>0%</strong><span class="muted">score</span></div>
+  <div class="card stat"><span class="muted">✓ Tasks</span><strong id="dashDone">0</strong><span class="muted">completed</span></div>
+ </div>
+</section>
+
+<!-- WORLD -->
+<section class="page" id="world">
+ <div class="card">
+  <h2>🌎 World</h2>
+  <p class="muted" style="margin-top:6px">Daily discipline leaderboard.</p>
+ </div>
+
+ <div class="section-title"><h3>Today's ranking</h3></div>
+ <div class="card">
+  <div class="task"><b style="width:35px">1</b><div class="task-info"><b>NEYVO User</b><span>Discipline score</span></div><strong>100%</strong></div>
+  <div class="task"><b style="width:35px">2</b><div class="task-info"><b>NEYVO User</b><span>Discipline score</span></div><strong>94%</strong></div>
+  <div class="task"><b style="width:35px">3</b><div class="task-info"><b>NEYVO User</b><span>Discipline score</span></div><strong>91%</strong></div>
+  <p class="muted" style="margin-top:15px">Real rankings will be connected after accounts and the database are added.</p>
+ </div>
+</section>
+
+<!-- SETTINGS -->
+<section class="page" id="settings">
+ <div class="card">
+  <h2>⚙️ Settings</h2>
+  <p class="muted" style="margin:6px 0 22px">Make NEYVO work your way.</p>
+
+  <div class="task">
+   <div class="task-info"><b>🔔 Notifications</b><span>Reminder notifications</span></div>
+   <button class="check" onclick="this.textContent=this.textContent==='ON'?'OFF':'ON'">ON</button>
+  </div>
+
+  <div class="task">
+   <div class="task-info"><b>🔊 Sound</b><span>Notification tone</span></div>
+   <button class="check" onclick="this.textContent=this.textContent==='ON'?'OFF':'ON'">ON</button>
+  </div>
+
+  <div class="task">
+   <div class="task-info"><b>📳 Vibration</b><span>Vibrate for reminders</span></div>
+   <button class="check" onclick="this.textContent=this.textContent==='ON'?'OFF':'ON'">ON</button>
+  </div>
+
+  <div class="task">
+   <div class="task-info"><b>🌍 Country</b><span>Used later for regional food context</span></div>
+   <select style="width:150px"><option>India</option><option>United States</option><option>United Kingdom</option><option>Other</option></select>
+  </div>
+ </div>
+</section>
+
+</main>
+</div>
+
+<nav class="mobile-nav">
+ <button class="active" data-page="home"><span>⌂</span>Home</button>
+ <button data-page="schedule"><span>◷</span>Schedule</button>
+ <button data-page="forget"><span>⚡</span>Forget</button>
+ <button data-page="food"><span>◉</span>Food</button>
+ <button data-page="dashboard"><span>♙</span>Progress</button>
+</nav>
+
+<script>
+const tasks=JSON.parse(localStorage.getItem("neyvo_tasks")||"[]");
+const forgets=JSON.parse(localStorage.getItem("neyvo_forgets")||"[]");
+
+document.getElementById("date").textContent=new Date().toLocaleDateString(undefined,{
+ weekday:"long",month:"long",day:"numeric",year:"numeric"
+});
+
+function save(){
+ localStorage.setItem("neyvo_tasks",JSON.stringify(tasks));
+ localStorage.setItem("neyvo_forgets",JSON.stringify(forgets));
+}
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+
+function renderTasks(){
+ const box=document.getElementById("scheduleList");
+ const home=document.getElementById("homeTasks");
+ if(!tasks.length){
+  box.innerHTML='<div class="empty">Your schedule is empty.</div>';
+  home.innerHTML='<div class="empty">No tasks yet.<br>Add your first task from Schedule.</div>';
+  return;
+ }
+ const html=tasks.map((t,i)=>`
+ <div class="task">
+  <div class="dot"></div>
+  <div class="task-info"><b>${escape(t.name)}</b><span>${t.time||"Any time"} · ${t.type}</span></div>
+  <button class="check" onclick="completeTask(${i})">${t.done?"✓":"○"}</button>
+ </div>`).join("");
+ box.innerHTML=html;
+ home.innerHTML=html;
+ const done=tasks.filter(x=>x.done).length;
+ document.getElementById("homeDone").textContent=done;
+ document.getElementById("dashDone").textContent=done;
+}
+
+function addTask(){
+ const name=document.getElementById("taskName").value.trim();
+ if(!name)return alert("Please enter a task.");
+ tasks.push({
+  name,time:document.getElementById("taskTime").value,
+  type:document.getElementById("taskType").value,done:false
+ });
+ document.getElementById("taskName").value="";
+ document.getElementById("taskTime").value="";
+ save();renderTasks();
+}
+
+function completeTask(i){
+ tasks[i].done=!tasks[i].done;
+ save();renderTasks();
+}
+
+function addForget(){
+ const text=document.getElementById("forgetInput").value.trim();
+ if(!text)return alert("Please enter what you want to remember.");
+ forgets.push({text,time:document.getElementById("forgetTime").value,done:false});
+ document.getElementById("forgetInput").value="";
+ document.getElementById("forgetTime").value="";
+ save();renderForgets();
+}
+
+function renderForgets(){
+ const box=document.getElementById("forgetList");
+ if(!forgets.length){
+  box.innerHTML='<div class="empty">No reminders yet.</div>';return;
+ }
+ box.innerHTML=forgets.map((x,i)=>`
+ <div class="task">
+  <div class="dot"></div>
+  <div class="task-info"><b>${escape(x.text)}</b><span>${x.time?new Date(x.time).toLocaleString():"No time set"}</span></div>
+  <button class="check" onclick="completeForget(${i})">${x.done?"✓":"○"}</button>
+ </div>`).join("");
+}
+
+function completeForget(i){
+ forgets[i].done=!forgets[i].done;
+ save();renderForgets();
+}
+
+function analyzeFood(){
+ const desc=document.getElementById("foodDescription").value.trim();
+ const file=document.getElementById("foodPhoto").files[0];
+ if(!file&&!desc)return alert("Add a food photo or description first.");
+ document.getElementById("foodResult").innerHTML=`
+ <div class="card" style="margin-top:18px;background:#f7f6ff">
+  <b>Food analysis preview</b>
+  <p class="muted" style="margin-top:8px">
+   The real food-AI analysis will be connected later. It will use your photo,
+   palm-size reference and description to provide approximate protein,
+   carbohydrates and fiber information.
+  </p>
+ </div>`;
+}
+
+function escape(s){
+ return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+
+renderTasks();renderForgets();
+</script>
+</body>
+</html>
