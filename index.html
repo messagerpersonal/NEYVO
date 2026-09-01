@@ -835,26 +835,96 @@ renderF();
 
 function photo(input){
 
-let f=input.files[0];
+  let f=input.files[0];
 
-if(!f||!f.type.startsWith("image/"))
-return;
+  if(!f || !f.type.startsWith("image/")){
+    alert("Please select an image.");
+    return;
+  }
 
-foodMime=f.type;
+  let url=URL.createObjectURL(f);
+  let img=new Image();
 
-let reader=new FileReader();
+  img.onload=()=>{
 
-reader.onload=e=>{
+    try{
 
-foodImage=e.target.result.split(",")[1];
+      let MAX=1280;
+      let scale=Math.min(
+        1,
+        MAX/Math.max(img.width,img.height)
+      );
 
-$("photoPreview").src=e.target.result;
+      let canvas=document.createElement("canvas");
 
-$("photoPreview").style.display="block";
+      canvas.width=Math.max(1,Math.round(img.width*scale));
+      canvas.height=Math.max(1,Math.round(img.height*scale));
 
-};
+      let ctx=canvas.getContext("2d");
 
-reader.readAsDataURL(f);
+      if(!ctx){
+        URL.revokeObjectURL(url);
+        alert("Your browser could not prepare the photo.");
+        return;
+      }
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      canvas.toBlob(blob=>{
+
+        URL.revokeObjectURL(url);
+
+        if(!blob){
+          alert("Could not prepare the photo.");
+          return;
+        }
+
+        let reader=new FileReader();
+
+        reader.onload=e=>{
+
+          let result=e.target.result;
+
+          foodMime="image/jpeg";
+          foodImage=result.split(",")[1]||"";
+
+          $("photoPreview").src=result;
+          $("photoPreview").style.display="block";
+
+        };
+
+        reader.onerror=()=>{
+          alert("Could not read the photo.");
+        };
+
+        reader.readAsDataURL(blob);
+
+      },"image/jpeg",0.75);
+
+    }catch(error){
+
+      URL.revokeObjectURL(url);
+      console.error("NEYVO photo error:",error);
+      alert("Could not prepare the photo.");
+
+    }
+
+  };
+
+  img.onerror=()=>{
+
+    URL.revokeObjectURL(url);
+    alert("Could not open this image.");
+
+  };
+
+  img.src=url;
 }
 
 
@@ -862,111 +932,130 @@ reader.readAsDataURL(f);
 
 async function foodAI(){
 
-let description=$("fd").value.trim();
+  let description=$("fd").value.trim();
 
-if(!foodImage&&!description){
+  if(!foodImage&&!description){
 
-alert("Take or upload a photo, or describe the food.");
+    alert("Take or upload a photo, or describe the food.");
+    return;
 
-return;
+  }
+
+  $("foodResult").innerHTML=`
+    <div class="card" style="margin-top:15px">
+      <b>🤖 NEYVO AI</b>
+      <p class="muted" style="margin-top:8px">
+        Analyzing your food...
+      </p>
+    </div>
+  `;
+
+  let controller=new AbortController();
+
+  let timeout=setTimeout(()=>{
+    controller.abort();
+  },120000);
+
+  try{
+
+    let response=await fetch(
+      "https://neyvo-food-ai.creatermsg.workers.dev/",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          image:foodImage||"",
+          mime:foodMime||"image/jpeg",
+          description:description||""
+        }),
+        signal:controller.signal
+      }
+    );
+
+    let raw=await response.text();
+
+    let data;
+
+    try{
+      data=JSON.parse(raw);
+    }catch{
+      throw new Error(
+        "Invalid response from Food AI."
+      );
+    }
+
+    if(!response.ok){
+
+      throw new Error(
+        data.detail||
+        data.error||
+        ("Request failed with status "+response.status)
+      );
+
+    }
+
+    if(!data.result){
+
+      throw new Error(
+        "The AI returned no result."
+      );
+
+    }
+
+    $("foodResult").innerHTML=`
+      <div class="card" style="margin-top:15px">
+        <b>🤖 NEYVO AI</b>
+        <p style="margin-top:8px;white-space:pre-wrap">
+          ${esc(data.result)}
+        </p>
+      </div>
+    `;
+
+  }catch(error){
+
+    console.error("NEYVO Food AI error:",error);
+
+    let message;
+
+    if(error.name==="AbortError"){
+
+      message=
+        "⏳ Food AI took too long to respond. Please try again.";
+
+    }else if(
+      error instanceof TypeError &&
+      /fetch|network|failed/i.test(error.message||"")
+    ){
+
+      message=
+        "⚠️ Could not connect to NEYVO Food AI. Check your internet connection and try again.";
+
+    }else{
+
+      message=
+        error.message||
+        "Could not connect to Food AI.";
+
+    }
+
+    $("foodResult").innerHTML=`
+      <div class="card" style="margin-top:15px">
+        <b>⚠️ Food AI</b>
+        <p class="muted" style="margin-top:8px">
+          ${esc(message)}
+        </p>
+      </div>
+    `;
+
+  }finally{
+
+    clearTimeout(timeout);
+
+  }
+
 }
-
-$("foodResult").innerHTML=`
-<div class="card" style="margin-top:15px">
-<b>🤖 NEYVO AI</b>
-<p class="muted" style="margin-top:8px">
-Analyzing your food...
-</p>
-</div>
-`;
-
-let controller=new AbortController();
-
-let timeout=setTimeout(()=>{
-controller.abort();
-},30000);
-
-try{
-
-let response=await fetch(
-"https://neyvo-food-ai.creatermsg.workers.dev",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-image:foodImage,
-mime:foodMime,
-description:description
-}),
-signal:controller.signal
-}
-);
-
-let raw=await response.text();
-
-let data;
-
-try{
-data=JSON.parse(raw);
-}catch{
-data={error:raw};
-}
-
-if(!response.ok){
-
-throw new Error(
-data.detail||
-data.error||
-("Request failed with status "+response.status)
-);
-
-}
-
-if(!data.result){
-
-throw new Error("The AI returned no result.");
-}
-
-$("foodResult").innerHTML=`
-<div class="card" style="margin-top:15px">
-
-<b>🤖 NEYVO AI</b>
-
-<p style="margin-top:8px;white-space:pre-wrap">
-${esc(data.result)}
-</p>
-
-</div>
-`;
-
-}catch(error){
-
-let message=
-error.name==="AbortError"
-?"The AI request timed out. Please try again."
-:error.message||"Connection error.";
-
-$("foodResult").innerHTML=`
-<div class="card" style="margin-top:15px">
-
-<b>⚠️ Food AI</b>
-
-<p class="muted" style="margin-top:8px">
-${esc(message)}
-</p>
-
-</div>
-`;
-
-}finally{
-
-clearTimeout(timeout);
-
-}
-}
-
 
 /* SETTINGS */
 
