@@ -138,7 +138,6 @@ input,select,textarea{width:100%;padding:12px;border:1px solid var(--l);border-r
 
 </section>
 
-
 <!-- SCHEDULE -->
 <section class="page" id="schedule">
 
@@ -168,6 +167,7 @@ input,select,textarea{width:100%;padding:12px;border:1px solid var(--l);border-r
 </div>
 
 <div class="row">
+
 <label class="muted">
 Start
 <input id="start" type="date">
@@ -177,6 +177,7 @@ Start
 End
 <input id="end" type="date">
 </label>
+
 </div>
 
 <label class="muted">
@@ -207,7 +208,6 @@ Motivation for this whole schedule
 
 </section>
 
-
 <!-- DON'T FORGET -->
 <section class="page" id="forget">
 
@@ -237,7 +237,6 @@ Motivation for this whole schedule
 
 </section>
 
-
 <!-- FOOD -->
 <section class="page" id="food">
 
@@ -253,7 +252,8 @@ Motivation for this whole schedule
 
 <label class="btn" style="text-align:center">
 📷 Take Photo
-<input type="file"
+<input
+type="file"
 accept="image/*"
 capture="environment"
 hidden
@@ -262,7 +262,8 @@ onchange="photo(this)">
 
 <label class="btn" style="text-align:center">
 🖼️ Upload Photo
-<input type="file"
+<input
+type="file"
 accept="image/*"
 hidden
 onchange="photo(this)">
@@ -270,7 +271,8 @@ onchange="photo(this)">
 
 <img id="photoPreview" class="preview">
 
-<textarea id="fd"
+<textarea
+id="fd"
 rows="4"
 placeholder="Optional: describe the food"></textarea>
 
@@ -285,7 +287,6 @@ placeholder="Optional: describe the food"></textarea>
 </div>
 
 </section>
-
 
 <!-- DASHBOARD -->
 <section class="page" id="dashboard">
@@ -315,7 +316,6 @@ placeholder="Optional: describe the food"></textarea>
 </div>
 
 </section>
-
 
 <!-- WORLD -->
 <section class="page" id="world">
@@ -357,7 +357,6 @@ placeholder="Optional: describe the food"></textarea>
 </div>
 
 </section>
-
 
 <!-- SETTINGS -->
 <section class="page" id="settings">
@@ -412,7 +411,6 @@ placeholder="Optional: describe the food"></textarea>
 </main>
 </div>
 
-
 <!-- MOBILE NAV -->
 <nav class="mobile">
 
@@ -438,9 +436,7 @@ placeholder="Optional: describe the food"></textarea>
 
 </nav>
 
-
 <div class="mot" id="motScreen"></div>
-
 
 <script>
 
@@ -465,10 +461,10 @@ day:"numeric",
 year:"numeric"
 });
 
-
 /* PAGE */
 
 function page(id){
+
 document.querySelectorAll(".page")
 .forEach(x=>x.classList.toggle("active",x.id==id));
 
@@ -480,7 +476,6 @@ scrollTo(0,0);
 
 document.querySelectorAll("[data-p]")
 .forEach(x=>x.onclick=()=>page(x.dataset.p));
-
 
 /* TABS */
 
@@ -503,7 +498,6 @@ t=="repeat"
 render(t);
 }
 
-
 /* MOTIVATION */
 
 function motType(){
@@ -521,6 +515,7 @@ t=="quote"
 :"";
 }
 
+/* ADD TASK */
 
 function addTask(){
 
@@ -559,7 +554,6 @@ $("motInput").innerHTML="";
 $("men").value="off";
 }
 
-
 /* TASKS */
 
 function today(){
@@ -571,9 +565,8 @@ function active(t){
 let d=today();
 
 return (!t.start||d>=t.start)&&
-       (!t.end||d<=t.end);
+(!t.end||d<=t.end);
 }
-
 
 function get(type){
 
@@ -590,7 +583,6 @@ active(t)&&
 t.type==type
 );
 }
-
 
 function taskHTML(t){
 
@@ -626,7 +618,6 @@ title="Skip task">
 `;
 }
 
-
 function render(type=current){
 
 let a=get(type);
@@ -657,7 +648,6 @@ $("streak").textContent=d?1:0;
 $("ds").textContent=d?1:0;
 }
 
-
 function finish(i){
 
 tasks[i].done=!tasks[i].done;
@@ -666,7 +656,6 @@ tasks[i].skip=false;
 save();
 render(current);
 }
-
 
 function skip(i){
 
@@ -683,7 +672,6 @@ return;
 
 showMot(t,i);
 }
-
 
 function showMot(t,i){
 
@@ -722,7 +710,6 @@ Complete
 $("motScreen").style.display="block";
 }
 
-
 function skipMot(){
 closeMot();
 }
@@ -752,7 +739,6 @@ $("motScreen").style.display="none";
 $("motScreen").innerHTML="";
 }
 
-
 /* DON'T FORGET */
 
 function addForget(){
@@ -774,7 +760,6 @@ renderF();
 $("fn").value="";
 $("ft").value="";
 }
-
 
 function renderF(){
 
@@ -812,7 +797,6 @@ onclick="forgetSkip(${i})">
 :'<div class="empty">No reminders.</div>';
 }
 
-
 function forgetDone(i){
 
 forgets[i].done=!forgets[i].done;
@@ -820,7 +804,6 @@ forgets[i].done=!forgets[i].done;
 save();
 renderF();
 }
-
 
 function forgetSkip(i){
 
@@ -830,230 +813,214 @@ save();
 renderF();
 }
 
-
 /* FOOD PHOTO */
 
 function photo(input){
 
-  let f=input.files[0];
+let f=input.files[0];
 
-  if(!f || !f.type.startsWith("image/")){
-    alert("Please select an image.");
-    return;
-  }
-
-  let url=URL.createObjectURL(f);
-  let img=new Image();
-
-  img.onload=()=>{
-
-    try{
-
-      let MAX=1280;
-      let scale=Math.min(
-        1,
-        MAX/Math.max(img.width,img.height)
-      );
-
-      let canvas=document.createElement("canvas");
-
-      canvas.width=Math.max(1,Math.round(img.width*scale));
-      canvas.height=Math.max(1,Math.round(img.height*scale));
-
-      let ctx=canvas.getContext("2d");
-
-      if(!ctx){
-        URL.revokeObjectURL(url);
-        alert("Your browser could not prepare the photo.");
-        return;
-      }
-
-      ctx.drawImage(
-        img,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      canvas.toBlob(blob=>{
-
-        URL.revokeObjectURL(url);
-
-        if(!blob){
-          alert("Could not prepare the photo.");
-          return;
-        }
-
-        let reader=new FileReader();
-
-        reader.onload=e=>{
-
-          let result=e.target.result;
-
-          foodMime="image/jpeg";
-          foodImage=result.split(",")[1]||"";
-
-          $("photoPreview").src=result;
-          $("photoPreview").style.display="block";
-
-        };
-
-        reader.onerror=()=>{
-          alert("Could not read the photo.");
-        };
-
-        reader.readAsDataURL(blob);
-
-      },"image/jpeg",0.75);
-
-    }catch(error){
-
-      URL.revokeObjectURL(url);
-      console.error("NEYVO photo error:",error);
-      alert("Could not prepare the photo.");
-
-    }
-
-  };
-
-  img.onerror=()=>{
-
-    URL.revokeObjectURL(url);
-    alert("Could not open this image.");
-
-  };
-
-  img.src=url;
+if(!f || !f.type.startsWith("image/")){
+alert("Please select an image.");
+return;
 }
 
+let url=URL.createObjectURL(f);
+let img=new Image();
 
-/* FOOD AI */
+img.onload=()=>{
+
+try{
+
+let MAX=1280;
+
+let scale=Math.min(
+1,
+MAX/Math.max(img.width,img.height)
+);
+
+let canvas=document.createElement("canvas");
+
+canvas.width=Math.max(1,Math.round(img.width*scale));
+canvas.height=Math.max(1,Math.round(img.height*scale));
+
+let ctx=canvas.getContext("2d");
+
+if(!ctx){
+URL.revokeObjectURL(url);
+alert("Your browser could not prepare the photo.");
+return;
+}
+
+ctx.drawImage(
+img,
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+canvas.toBlob(blob=>{
+
+URL.revokeObjectURL(url);
+
+if(!blob){
+alert("Could not prepare the photo.");
+return;
+}
+
+let reader=new FileReader();
+
+reader.onload=e=>{
+
+let result=e.target.result;
+
+foodMime="image/jpeg";
+foodImage=result.split(",")[1]||"";
+
+$("photoPreview").src=result;
+$("photoPreview").style.display="block";
+
+};
+
+reader.onerror=()=>{
+alert("Could not read the photo.");
+};
+
+reader.readAsDataURL(blob);
+
+},"image/jpeg",0.75);
+
+}catch(error){
+
+URL.revokeObjectURL(url);
+console.error("NEYVO photo error:",error);
+alert("Could not prepare the photo.");
+
+}
+
+};
+
+img.onerror=()=>{
+
+URL.revokeObjectURL(url);
+alert("Could not open this image.");
+
+};
+
+img.src=url;
+}
+
+/* FOOD AI — SUPABASE */
 
 async function foodAI(){
 
-  let description=$("fd").value.trim();
+let description=$("fd").value.trim();
 
-  if(!foodImage&&!description){
+if(!foodImage&&!description){
+alert("Take or upload a photo, or describe the food.");
+return;
+}
 
-    alert("Take or upload a photo, or describe the food.");
-    return;
+$("foodResult").innerHTML=`
+<div class="card" style="margin-top:15px">
+<b>🤖 NEYVO AI</b>
+<p class="muted" style="margin-top:8px">
+Analyzing your food...
+</p>
+</div>
+`;
 
-  }
+let controller=new AbortController();
 
-  $("foodResult").innerHTML=`
-    <div class="card" style="margin-top:15px">
-      <b>🤖 NEYVO AI</b>
-      <p class="muted" style="margin-top:8px">
-        Analyzing your food...
-      </p>
-    </div>
-  `;
+let timeout=setTimeout(()=>{
+controller.abort();
+},120000);
 
-  let controller=new AbortController();
+try{
 
-  let timeout=setTimeout(()=>{
-    controller.abort();
-  },120000);
+let response=await fetch(
+"https://krswarliexhwbgohfnxz.supabase.co/functions/v1/neyvo-food-ai",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+image:foodImage||"",
+mime:foodMime||"image/jpeg",
+description:description||""
+}),
+signal:controller.signal
+}
+);
 
-  try{
+let raw=await response.text();
 
-    let response=await fetch(
-      "https://neyvo-food-ai.creatermsg.workers.dev/",
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          image:foodImage||"",
-          mime:foodMime||"image/jpeg",
-          description:description||""
-        }),
-        signal:controller.signal
-      }
-    );
+let data;
 
-    let raw=await response.text();
+try{
+data=JSON.parse(raw);
+}catch{
+throw new Error("Invalid response from Food AI.");
+}
 
-    let data;
+if(!response.ok){
 
-    try{
-      data=JSON.parse(raw);
-    }catch{
-      throw new Error(
-        "Invalid response from Food AI."
-      );
-    }
+throw new Error(
+data.detail||
+data.message||
+data.error||
+("Request failed with status "+response.status)
+);
 
-    if(!response.ok){
+}
 
-      throw new Error(
-        data.detail||
-        data.error||
-        ("Request failed with status "+response.status)
-      );
+if(!data.result){
+throw new Error("The AI returned no result.");
+}
 
-    }
+$("foodResult").innerHTML=`
+<div class="card" style="margin-top:15px">
+<b>🤖 NEYVO AI</b>
+<p style="margin-top:8px;white-space:pre-wrap">
+${esc(data.result)}
+</p>
+</div>
+`;
 
-    if(!data.result){
+}catch(error){
 
-      throw new Error(
-        "The AI returned no result."
-      );
+console.error("NEYVO Food AI error:",error);
 
-    }
+let message;
 
-    $("foodResult").innerHTML=`
-      <div class="card" style="margin-top:15px">
-        <b>🤖 NEYVO AI</b>
-        <p style="margin-top:8px;white-space:pre-wrap">
-          ${esc(data.result)}
-        </p>
-      </div>
-    `;
+if(error.name==="AbortError"){
 
-  }catch(error){
+message=
+"⏳ Food AI took too long to respond. Please try again.";
 
-    console.error("NEYVO Food AI error:",error);
+}else{
 
-    let message;
+message=
+error.message||
+"Could not connect to Food AI.";
 
-    if(error.name==="AbortError"){
+}
 
-      message=
-        "⏳ Food AI took too long to respond. Please try again.";
+$("foodResult").innerHTML=`
+<div class="card" style="margin-top:15px">
+<b>⚠️ Food AI</b>
+<p class="muted" style="margin-top:8px">
+${esc(message)}
+</p>
+</div>
+`;
 
-    }else if(
-      error instanceof TypeError &&
-      /fetch|network|failed/i.test(error.message||"")
-    ){
+}finally{
 
-      message=
-        "⚠️ Could not connect to NEYVO Food AI. Check your internet connection and try again.";
+clearTimeout(timeout);
 
-    }else{
-
-      message=
-        error.message||
-        "Could not connect to Food AI.";
-
-    }
-
-    $("foodResult").innerHTML=`
-      <div class="card" style="margin-top:15px">
-        <b>⚠️ Food AI</b>
-        <p class="muted" style="margin-top:8px">
-          ${esc(message)}
-        </p>
-      </div>
-    `;
-
-  }finally{
-
-    clearTimeout(timeout);
-
-  }
+}
 
 }
 
@@ -1067,7 +1034,6 @@ b.textContent=="ON"
 :"ON";
 
 }
-
 
 /* SECURITY */
 
@@ -1085,7 +1051,6 @@ x=>({
 );
 
 }
-
 
 /* START */
 
