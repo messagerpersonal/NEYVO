@@ -159,11 +159,7 @@ input,select,textarea{width:100%;padding:12px;border:1px solid var(--l);border-r
 <div class="row">
 <input id="tt" type="time">
 
-<select id="rtype">
-<option value="none">No repeat</option>
-<option value="daily">Every day</option>
-<option value="weekly">Every week</option>
-</select>
+<input id="rtype" type="hidden" value="none">
 </div>
 
 <div class="row">
@@ -484,6 +480,9 @@ document.querySelectorAll("[data-p]")
 function tab(b,t){
 
 current=t;
+
+/* The top tabs are the only schedule choices. */
+$("rtype").value=t=="repeat"?"daily":"none";
 
 document.querySelectorAll(".tabs button")
 .forEach(x=>x.classList.remove("active"));
