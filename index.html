@@ -285,6 +285,18 @@ placeholder="Optional: describe the food"></textarea>
 
 <div id="foodResult"></div>
 
+<div class="card" style="margin-top:15px">
+<h3>📅 Weekly Nutrition</h3>
+<p class="muted" style="margin-top:6px">Your analyzed meals are saved on this device and totaled for the last 7 days.</p>
+<div class="grid" style="margin-top:12px">
+<div class="card stat"><span class="muted">🔥 Calories</span><strong id="weeklyCalories">0</strong><small class="muted">kcal</small></div>
+<div class="card stat"><span class="muted">💪 Protein</span><strong id="weeklyProtein">0</strong><small class="muted">g</small></div>
+<div class="card stat"><span class="muted">🌾 Carbs</span><strong id="weeklyCarbs">0</strong><small class="muted">g</small></div>
+<div class="card stat"><span class="muted">🥦 Fiber</span><strong id="weeklyFiber">0</strong><small class="muted">g</small></div>
+</div>
+<div id="weeklyMeals" class="muted" style="margin-top:12px">0 meals analyzed in the last 7 days.</div>
+</div>
+
 </div>
 
 </section>
@@ -314,6 +326,19 @@ placeholder="Optional: describe the food"></textarea>
 <strong id="dc">0</strong>
 </div>
 
+</div>
+
+<div class="card" style="margin-top:15px">
+<h3>🍽️ Weekly Food Summary</h3>
+<p class="muted" style="margin-top:6px">Estimated totals from your analyzed meals over the last 7 days.</p>
+<div style="margin-top:14px;padding:14px;background:#f6f7fb;border:1px solid var(--l);border-radius:12px;color:#171927">
+<p>🔥 Calories: <b id="dashWeeklyCalories">0 kcal</b></p>
+<p style="margin-top:7px">💪 Protein: <b id="dashWeeklyProtein">0 g</b></p>
+<p style="margin-top:7px">🌾 Carbohydrates: <b id="dashWeeklyCarbs">0 g</b></p>
+<p style="margin-top:7px">🥦 Fiber: <b id="dashWeeklyFiber">0 g</b></p>
+<p style="margin-top:10px" class="muted" id="dashWeeklyMeals">0 meals analyzed</p>
+</div>
+<p class="muted" style="margin-top:10px;font-size:12px">These are AI estimates, not exact measurements or medical nutrition targets.</p>
 </div>
 
 </section>
@@ -911,6 +936,67 @@ alert("Could not open this image.");
 img.src=url;
 }
 
+/* WEEKLY FOOD LOG */
+
+const FOOD_LOG_KEY="neyvoFoodLog";
+
+function getFoodLog(){
+try{return JSON.parse(localStorage.getItem(FOOD_LOG_KEY)||"[]");}
+catch{return [];}
+}
+
+function nutritionNumber(text,label){
+let re=new RegExp(label+"\\s*[:\\-]\\s*(?:about\\s*)?(\\d+(?:\\.\\d+)?)","i");
+let m=text.match(re);
+return m?Number(m[1]):0;
+}
+
+function weeklyFoodTotals(){
+let now=Date.now();
+let week=7*24*60*60*1000;
+let log=getFoodLog().filter(x=>now-Number(x.time||0)<=week&&now-Number(x.time||0)>=0);
+let totals={calories:0,protein:0,carbs:0,fiber:0,meals:log.length};
+log.forEach(x=>{
+ totals.calories+=Number(x.calories)||0;
+ totals.protein+=Number(x.protein)||0;
+ totals.carbs+=Number(x.carbs)||0;
+ totals.fiber+=Number(x.fiber)||0;
+});
+return totals;
+}
+
+function updateWeeklyFood(){
+let t=weeklyFoodTotals();
+const set=(id,value)=>{let el=$(id);if(el)el.textContent=value;};
+set("weeklyCalories",Math.round(t.calories));
+set("weeklyProtein",Math.round(t.protein*10)/10);
+set("weeklyCarbs",Math.round(t.carbs*10)/10);
+set("weeklyFiber",Math.round(t.fiber*10)/10);
+set("weeklyMeals",t.meals+" meal"+(t.meals===1?"":"s")+" analyzed in the last 7 days.");
+set("dashWeeklyCalories",Math.round(t.calories)+" kcal");
+set("dashWeeklyProtein",Math.round(t.protein*10)/10+" g");
+set("dashWeeklyCarbs",Math.round(t.carbs*10)/10+" g");
+set("dashWeeklyFiber",Math.round(t.fiber*10)/10+" g");
+set("dashWeeklyMeals",t.meals+" meal"+(t.meals===1?"":"s")+" analyzed");
+}
+
+function saveFoodAnalysis(result){
+let item={
+ time:Date.now(),
+ result:result,
+ calories:nutritionNumber(result,"Estimated calories"),
+ protein:nutritionNumber(result,"Estimated protein"),
+ carbs:nutritionNumber(result,"Estimated (?:carbohydrates|carbs)"),
+ fiber:nutritionNumber(result,"Estimated fiber")
+};
+let log=getFoodLog();
+log.push(item);
+// Keep local history compact.
+if(log.length>100)log=log.slice(-100);
+localStorage.setItem(FOOD_LOG_KEY,JSON.stringify(log));
+updateWeeklyFood();
+}
+
 /* FOOD AI — SUPABASE */
 
 async function foodAI(){
@@ -986,6 +1072,8 @@ if(!data.result){
 throw new Error("The AI returned no result.");
 }
 
+saveFoodAnalysis(data.result);
+
 $("foodResult").innerHTML=`
 <div class="card" style="margin-top:15px">
 <b>🤖 NEYVO AI</b>
@@ -1040,6 +1128,8 @@ if(analyzeBtn){
 }
 
 }
+
+updateWeeklyFood();
 
 /* SETTINGS */
 
