@@ -367,7 +367,7 @@ placeholder="Optional: describe the food"></textarea>
 <b>🔔 Notifications</b>
 <small>Reminder notifications</small>
 </div>
-<button class="check" onclick="toggle(this)">ON</button>
+<button class="check" id="notifyToggle" onclick="toggleSetting('notifications',this)">ON</button>
 </div>
 
 <div class="task">
@@ -375,7 +375,7 @@ placeholder="Optional: describe the food"></textarea>
 <b>🔊 Sound</b>
 <small>Reminder tone</small>
 </div>
-<button class="check" onclick="toggle(this)">ON</button>
+<button class="check" id="soundToggle" onclick="toggleSetting('sound',this)">ON</button>
 </div>
 
 <div class="task">
@@ -383,7 +383,7 @@ placeholder="Optional: describe the food"></textarea>
 <b>📳 Vibration</b>
 <small>Vibrate reminders</small>
 </div>
-<button class="check" onclick="toggle(this)">ON</button>
+<button class="check" id="vibrationToggle" onclick="toggleSetting('vibration',this)">ON</button>
 </div>
 
 <div class="task">
@@ -1062,16 +1062,97 @@ if(analyzeBtn){
 
 }
 
-/* SETTINGS */
+/* SETTINGS + REAL NOTIFICATIONS */
 
-function toggle(b){
+let neyvoSettings=JSON.parse(localStorage.neyvoSettings||'{"notifications":true,"sound":true,"vibration":true}');
 
-b.textContent=
-b.textContent=="ON"
-?"OFF"
-:"ON";
-
+function saveSettings(){
+localStorage.neyvoSettings=JSON.stringify(neyvoSettings);
 }
+
+function applySettings(){
+$("notifyToggle").textContent=neyvoSettings.notifications?"ON":"OFF";
+$("soundToggle").textContent=neyvoSettings.sound?"ON":"OFF";
+$("vibrationToggle").textContent=neyvoSettings.vibration?"ON":"OFF";
+}
+
+async function toggleSetting(name,b){
+neyvoSettings[name]=!neyvoSettings[name];
+saveSettings();
+applySettings();
+
+if(name=="notifications" && neyvoSettings.notifications){
+if("Notification" in window){
+try{
+let permission=await Notification.requestPermission();
+if(permission!="granted"){
+neyvoSettings.notifications=false;
+saveSettings();
+applySettings();
+alert("Please allow browser notifications for NEYVO reminders.");
+}
+}catch(e){
+neyvoSettings.notifications=false;
+saveSettings();
+applySettings();
+}
+}else{
+neyvoSettings.notifications=false;
+saveSettings();
+applySettings();
+alert("This browser does not support notifications.");
+}
+}
+}
+
+function playReminderSound(){
+if(!neyvoSettings.sound)return;
+try{
+let C=window.AudioContext||window.webkitAudioContext;
+if(!C)return;
+let ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();
+o.frequency.value=880;o.type="sine";g.gain.value=.08;
+o.connect(g);g.connect(ctx.destination);o.start();
+setTimeout(()=>{o.frequency.value=660;},180);
+setTimeout(()=>{o.stop();ctx.close();},360);
+}catch(e){console.log("NEYVO sound unavailable",e);}
+}
+
+function remindVibrate(){
+if(neyvoSettings.vibration&&navigator.vibrate)navigator.vibrate([250,120,250]);
+}
+
+function taskDueNow(t){
+if(!t.time||!active(t))return false;
+let now=new Date(),d=today(),hm=now.toTimeString().slice(0,5);
+return hm==t.time&&!taskState(t).done&&!taskState(t).skip;
+}
+
+function sendTaskNotification(t){
+let key="neyvoNotified_"+today()+"_"+t.id;
+if(localStorage.getItem(key))return;
+localStorage.setItem(key,"1");
+
+if(neyvoSettings.notifications&&"Notification" in window&&Notification.permission==="granted"){
+try{
+new Notification("NEYVO 🔔",{body:t.name+(t.time?" · "+t.time:"")});
+}catch(e){console.log("NEYVO notification unavailable",e);}
+}
+playReminderSound();
+remindVibrate();
+}
+
+function checkTaskNotifications(){
+if(!neyvoSettings.notifications&&!neyvoSettings.sound&&!neyvoSettings.vibration)return;
+tasks.forEach(t=>{if(taskDueNow(t))sendTaskNotification(t);});
+}
+
+applySettings();
+if("Notification" in window&&Notification.permission==="default"){
+/* Permission is requested only when the user turns Notifications ON. */
+}
+setInterval(checkTaskNotifications,15000);
+checkTaskNotifications();
 
 /* SECURITY */
 
