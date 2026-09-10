@@ -244,6 +244,7 @@ Motivation for this whole schedule
 <small>FOOD AI</small>
 <h2>Understand your meal.</h2>
 <p>Take a photo or upload one from your device.</p>
+<p class="muted" style="margin-top:7px">✋ Tip: Place your hand beside the plate or food when taking the photo for a better rough portion estimate.</p>
 </div>
 
 <div class="card">
@@ -924,9 +925,14 @@ return;
 $("foodResult").innerHTML=`
 <div class="card" style="margin-top:15px">
 <b>🤖 NEYVO AI</b>
-<p class="muted" style="margin-top:8px">
-Analyzing your food...
-</p>
+<p style="margin-top:8px;white-space:pre-wrap">${esc(data.result)}</p>
+
+<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--l)">
+<b>📊 How to understand Confidence</b>
+<p class="muted" style="margin-top:8px">🟢 <b>High</b> → The photo is clear and the food/portion is easy to identify.</p>
+<p class="muted" style="margin-top:6px">🟡 <b>Medium</b> → The AI can identify it, but the portion or ingredients aren't completely clear.</p>
+<p class="muted" style="margin-top:6px">🔴 <b>Low</b> → The photo is unclear, food is partly hidden, or the portion is difficult to estimate.</p>
+</div>
 </div>
 `;
 
