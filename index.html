@@ -281,6 +281,18 @@ placeholder="Optional: describe the food"></textarea>
 
 <div id="foodResult"></div>
 
+<div class="card" style="margin-top:15px">
+<h3>📅 Weekly Nutrition</h3>
+<p class="muted" style="margin-top:6px">Your analyzed meals are saved on this device and kept for 7 days.</p>
+<div class="grid" style="margin-top:12px">
+<div class="card stat"><span class="muted">🔥 Calories</span><strong id="weeklyCalories">0</strong><small class="muted">kcal</small></div>
+<div class="card stat"><span class="muted">💪 Protein</span><strong id="weeklyProtein">0</strong><small class="muted">g</small></div>
+<div class="card stat"><span class="muted">🌾 Carbs</span><strong id="weeklyCarbs">0</strong><small class="muted">g</small></div>
+<div class="card stat"><span class="muted">🥦 Fiber</span><strong id="weeklyFiber">0</strong><small class="muted">g</small></div>
+</div>
+<div id="weeklyMeals" class="muted" style="margin-top:12px">0 meals analyzed in the last 7 days.</div>
+</div>
+
 </div>
 
 </section>
@@ -310,6 +322,18 @@ placeholder="Optional: describe the food"></textarea>
 <strong id="dc">0</strong>
 </div>
 
+</div>
+
+<div class="card" style="margin-top:15px">
+<h3>🍽️ Weekly Food Summary</h3>
+<p class="muted" style="margin-top:6px">Estimated totals from your analyzed meals over the last 7 days.</p>
+<div style="margin-top:14px;padding:14px;background:#f6f7fb;border:1px solid var(--l);border-radius:12px;color:#171927">
+<p>🔥 Calories: <b id="dashWeeklyCalories">0 kcal</b></p>
+<p style="margin-top:7px">💪 Protein: <b id="dashWeeklyProtein">0 g</b></p>
+<p style="margin-top:7px">🌾 Carbohydrates: <b id="dashWeeklyCarbs">0 g</b></p>
+<p style="margin-top:7px">🥦 Fiber: <b id="dashWeeklyFiber">0 g</b></p>
+<p style="margin-top:10px" class="muted" id="dashWeeklyMeals">0 meals analyzed</p>
+</div>
 </div>
 
 </section>
@@ -466,6 +490,8 @@ year:"numeric"
 /* PAGE */
 
 function page(id){
+
+localStorage.setItem("neyvoCurrentPage",id);
 
 document.querySelectorAll(".page")
 .forEach(x=>x.classList.toggle("active",x.id==id));
@@ -717,7 +743,7 @@ ${c}
 Skip Motivation → Skip Task
 </button>
 
-<button class="btn" onclick="finishMot(${i})" style="margin-left:8px">
+<button class="btn" onclick="finishMot(${i})" style="margin-left:18px">
 Complete
 </button>
 
@@ -1011,6 +1037,8 @@ if(!data.result){
 throw new Error("The AI returned no result.");
 }
 
+saveFoodAnalysis(data.result);
+
 $("foodResult").innerHTML=`
 <div class="card" style="margin-top:15px">
 <b>🤖 NEYVO AI</b>
@@ -1065,6 +1093,90 @@ if(analyzeBtn){
 }
 
 }
+
+/* WEEKLY FOOD LOG */
+
+const FOOD_LOG_KEY="neyvoFoodLog";
+const FOOD_WEEK_MS=7*24*60*60*1000;
+
+function getFoodLog(){
+try{return JSON.parse(localStorage.getItem(FOOD_LOG_KEY)||"[]");}
+catch{return [];} 
+}
+
+function cleanFoodLog(){
+let now=Date.now();
+let log=getFoodLog().filter(x=>now-Number(x.time||0)<FOOD_WEEK_MS&&now-Number(x.time||0)>=0);
+localStorage.setItem(FOOD_LOG_KEY,JSON.stringify(log));
+return log;
+}
+
+function nutritionNumber(text,label){
+let re=new RegExp(label+"\\s*[:\\-]\\s*(?:about\\s*)?(\\d+(?:\\.\\d+)?)","i");
+let m=text.match(re);
+return m?Number(m[1]):0;
+}
+
+function weeklyFoodTotals(){
+let log=cleanFoodLog();
+let totals={calories:0,protein:0,carbs:0,fiber:0,meals:log.length};
+log.forEach(x=>{
+ totals.calories+=Number(x.calories)||0;
+ totals.protein+=Number(x.protein)||0;
+ totals.carbs+=Number(x.carbs)||0;
+ totals.fiber+=Number(x.fiber)||0;
+});
+return totals;
+}
+
+function updateWeeklyFood(){
+let t=weeklyFoodTotals();
+const set=(id,value)=>{let el=$(id);if(el)el.textContent=value;};
+set("weeklyCalories",Math.round(t.calories));
+set("weeklyProtein",Math.round(t.protein*10)/10);
+set("weeklyCarbs",Math.round(t.carbs*10)/10);
+set("weeklyFiber",Math.round(t.fiber*10)/10);
+set("weeklyMeals",t.meals+" meal"+(t.meals===1?"":"s")+" analyzed in the last 7 days.");
+set("dashWeeklyCalories",Math.round(t.calories)+" kcal");
+set("dashWeeklyProtein",Math.round(t.protein*10)/10+" g");
+set("dashWeeklyCarbs",Math.round(t.carbs*10)/10+" g");
+set("dashWeeklyFiber",Math.round(t.fiber*10)/10+" g");
+set("dashWeeklyMeals",t.meals+" meal"+(t.meals===1?"":"s")+" analyzed");
+}
+
+function saveFoodAnalysis(result){
+let item={
+ time:Date.now(),
+ result:result,
+ calories:nutritionNumber(result,"Estimated calories"),
+ protein:nutritionNumber(result,"Estimated protein"),
+ carbs:nutritionNumber(result,"Estimated (?:carbohydrates|carbs)"),
+ fiber:nutritionNumber(result,"Estimated fiber")
+};
+let log=cleanFoodLog();
+log.push(item);
+localStorage.setItem(FOOD_LOG_KEY,JSON.stringify(log));
+localStorage.setItem("neyvoLastFoodResult",result);
+updateWeeklyFood();
+}
+
+function restoreLastFoodResult(){
+let result=localStorage.getItem("neyvoLastFoodResult");
+if(!result)return;
+$("foodResult").innerHTML=`
+<div class="card" style="margin-top:15px">
+<b>🤖 NEYVO AI — Last analysis</b>
+<p style="margin-top:8px;white-space:pre-wrap;line-height:1.6">${esc(result)}</p>
+<div style="margin-top:16px;padding:14px;background:#f6f7fb;border:1px solid var(--l);border-radius:12px;color:#171927">
+<b>📊 Confidence guide</b>
+<p style="margin-top:9px">🟢 <b>High</b> — Photo is clear and the food/portion is easy to identify.</p>
+<p style="margin-top:7px">🟡 <b>Medium</b> — Food can be identified, but portion or ingredients are not completely clear.</p>
+<p style="margin-top:7px">🔴 <b>Low</b> — Photo is unclear, food is partly hidden, or portion is difficult to estimate.</p>
+</div>
+</div>`;
+}
+
+updateWeeklyFood();
 
 /* SETTINGS + REAL NOTIFICATIONS */
 
@@ -1132,15 +1244,22 @@ let now=new Date(),d=today(),hm=now.toTimeString().slice(0,5);
 return hm==t.time&&!taskState(t).done&&!taskState(t).skip;
 }
 
-function sendTaskNotification(t){
-let key="neyvoNotified_"+today()+"_"+t.id;
+function forgetDueNow(x){
+if(!x.t||x.done)return false;
+let target=new Date(x.t),now=new Date();
+if(Number.isNaN(target.getTime()))return false;
+return target.getFullYear()==now.getFullYear()&&
+target.getMonth()==now.getMonth()&&
+target.getDate()==now.getDate()&&
+target.getHours()==now.getHours()&&
+target.getMinutes()==now.getMinutes();
+}
+
+function showBrowserNotification(title,body,key){
 if(localStorage.getItem(key))return;
 localStorage.setItem(key,"1");
-
 if(neyvoSettings.notifications&&"Notification" in window&&Notification.permission==="granted"){
-try{
-new Notification("NEYVO 🔔",{body:t.name+(t.time?" · "+t.time:"")});
-}catch(e){console.log("NEYVO notification unavailable",e);}
+try{new Notification(title,{body});}catch(e){console.log("NEYVO notification unavailable",e);}
 }
 playReminderSound();
 remindVibrate();
@@ -1148,13 +1267,30 @@ remindVibrate();
 
 function checkTaskNotifications(){
 if(!neyvoSettings.notifications&&!neyvoSettings.sound&&!neyvoSettings.vibration)return;
-tasks.forEach(t=>{if(taskDueNow(t))sendTaskNotification(t);});
+let taskSent=false,forgetSent=false;
+
+tasks.forEach(t=>{
+if(taskDueNow(t)){
+let key="neyvoNotified_task_"+today()+"_"+t.id;
+if(!localStorage.getItem(key)){
+showBrowserNotification("NEYVO 🔔 Scheduled Task",t.name+(t.time?" · "+t.time:""),key);
+taskSent=true;
+}
+}
+});
+
+forgets.forEach((x,i)=>{
+if(forgetDueNow(x)){
+let key="neyvoNotified_forget_"+today()+"_"+i+"_"+x.t;
+if(!localStorage.getItem(key)){
+showBrowserNotification("NEYVO ⚡ Don't Forget",x.n+(x.t?" · "+new Date(x.t).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):""),key);
+forgetSent=true;
+}
+}
+});
 }
 
 applySettings();
-if("Notification" in window&&Notification.permission==="default"){
-/* Permission is requested only when the user turns Notifications ON. */
-}
 setInterval(checkTaskNotifications,15000);
 checkTaskNotifications();
 
@@ -1179,6 +1315,11 @@ x=>({
 
 render();
 renderF();
+restoreLastFoodResult();
+updateWeeklyFood();
+
+let savedPage=localStorage.getItem("neyvoCurrentPage");
+if(savedPage && document.getElementById(savedPage))page(savedPage);
 
 </script>
 
