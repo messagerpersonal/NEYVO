@@ -29,7 +29,7 @@ button{border:0;cursor:pointer}
 .card{background:var(--c);border:1px solid var(--l);border-radius:18px;padding:19px;margin-bottom:15px}
 .hero{background:linear-gradient(135deg,#635bff,#8179ff);color:#fff;border:0}
 .hero h2{font-size:27px;margin:8px 0 18px}
-.btn{background:var(--p);color:#fff;padding:11px 16px;border-radius:11px;font-weight:800}
+.btn{background:var(--p);color:#fff;padding:11px 16px;border-radius:11px;font-weight:800}.btn:disabled{opacity:.65;cursor:wait}
 .light{background:#fff;color:var(--p)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
 .stat strong{display:block;font-size:26px;margin:7px 0}
@@ -244,7 +244,7 @@ Motivation for this whole schedule
 <small>FOOD AI</small>
 <h2>Understand your meal.</h2>
 <p>Take a photo or upload one from your device.</p>
-<p class="muted" style="margin-top:7px">✋ Tip: Place your hand beside the plate or food when taking the photo for a better rough portion estimate.</p>
+<p style="margin-top:10px;font-weight:800;color:#171927;background:#fff;padding:11px 13px;border-radius:10px">✋ <b>Tip:</b> Place your hand beside the plate or food when taking the photo for a better rough portion estimate.</p>
 </div>
 
 <div class="card">
@@ -277,7 +277,7 @@ id="fd"
 rows="4"
 placeholder="Optional: describe the food"></textarea>
 
-<button class="btn" onclick="foodAI()">
+<button class="btn" id="analyzeFoodBtn" type="button" onclick="foodAI()">
 🤖 Analyze with NEYVO AI
 </button>
 
@@ -916,6 +916,12 @@ img.src=url;
 async function foodAI(){
 
 let description=$("fd").value.trim();
+let analyzeBtn=$("analyzeFoodBtn");
+
+if(analyzeBtn){
+  analyzeBtn.disabled=true;
+  analyzeBtn.textContent="⏳ Analyzing...";
+}
 
 if(!foodImage&&!description){
 alert("Take or upload a photo, or describe the food.");
@@ -925,14 +931,9 @@ return;
 $("foodResult").innerHTML=`
 <div class="card" style="margin-top:15px">
 <b>🤖 NEYVO AI</b>
-<p style="margin-top:8px;white-space:pre-wrap">${esc(data.result)}</p>
-
-<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--l)">
-<b>📊 How to understand Confidence</b>
-<p class="muted" style="margin-top:8px">🟢 <b>High</b> → The photo is clear and the food/portion is easy to identify.</p>
-<p class="muted" style="margin-top:6px">🟡 <b>Medium</b> → The AI can identify it, but the portion or ingredients aren't completely clear.</p>
-<p class="muted" style="margin-top:6px">🔴 <b>Low</b> → The photo is unclear, food is partly hidden, or the portion is difficult to estimate.</p>
-</div>
+<p class="muted" style="margin-top:8px">
+Analyzing your food...
+</p>
 </div>
 `;
 
@@ -988,9 +989,15 @@ throw new Error("The AI returned no result.");
 $("foodResult").innerHTML=`
 <div class="card" style="margin-top:15px">
 <b>🤖 NEYVO AI</b>
-<p style="margin-top:8px;white-space:pre-wrap">
+<p style="margin-top:8px;white-space:pre-wrap;line-height:1.6">
 ${esc(data.result)}
 </p>
+<div style="margin-top:16px;padding:14px;background:#f6f7fb;border:1px solid var(--l);border-radius:12px;color:#171927">
+<b>📊 Confidence guide</b>
+<p style="margin-top:9px">🟢 <b>High</b> — Photo is clear and the food/portion is easy to identify.</p>
+<p style="margin-top:7px">🟡 <b>Medium</b> — Food can be identified, but portion or ingredients are not completely clear.</p>
+<p style="margin-top:7px">🔴 <b>Low</b> — Photo is unclear, food is partly hidden, or portion is difficult to estimate.</p>
+</div>
 </div>
 `;
 
@@ -1025,6 +1032,10 @@ ${esc(message)}
 }finally{
 
 clearTimeout(timeout);
+if(analyzeBtn){
+  analyzeBtn.disabled=false;
+  analyzeBtn.textContent="🤖 Analyze with NEYVO AI";
+}
 
 }
 
