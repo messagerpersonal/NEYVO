@@ -518,7 +518,7 @@ t=="quote"
 
 /* ADD TASK */
 
-function addTask(){
+async function addTask(){
 
 let n=$("tn").value.trim();
 
@@ -542,6 +542,17 @@ history:{}
 
 if(t.mot=="quote")
 t.mv=$("mv")?.value||"Keep going. You can do this!";
+
+if(t.mot=="photo"||t.mot=="video"){
+let file=$("mv")?.files?.[0];
+if(!file)return alert("Please choose a motivation file.");
+t.mv=await new Promise((resolve,reject)=>{
+let r=new FileReader();
+r.onload=()=>resolve(r.result);
+r.onerror=reject;
+r.readAsDataURL(file);
+});
+}
 
 tasks.push(t);
 
@@ -680,9 +691,13 @@ showMot(t,i);
 function showMot(t,i){
 
 let c=
-t.mot=="quote"
-?`<div class="quote">${esc(t.mv)}</div>`
-:`<p class="muted" style="padding:25px">Your motivation is ready.</p>`;
+ t.mot=="quote"
+ ?`<div class="quote">${esc(t.mv)}</div>`
+ :t.mot=="photo"
+ ?`<img src="${t.mv}" alt="Motivation" style="max-width:100%;max-height:300px;border-radius:14px;margin:14px auto;display:block">`
+ :t.mot=="video"
+ ?`<video src="${t.mv}" controls playsinline style="max-width:100%;max-height:300px;border-radius:14px;margin:14px auto;display:block"></video>`
+ :`<p class="muted" style="padding:25px">Your motivation is ready.</p>`;
 
 $("motScreen").innerHTML=`
 
@@ -692,17 +707,13 @@ $("motScreen").innerHTML=`
 
 ${c}
 
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:15px">
+<div style="margin-top:15px">
 
-<button class="btn" onclick="skipMot()">
-Skip Motivation
+<button class="btn" onclick="skipMot(${i})">
+Skip Motivation → Skip Task
 </button>
 
-<button class="btn" onclick="skipTask(${i})">
-Skip Task
-</button>
-
-<button class="btn" onclick="finishMot(${i})">
+<button class="btn" onclick="finishMot(${i})" style="margin-left:8px">
 Complete
 </button>
 
@@ -714,8 +725,14 @@ Complete
 $("motScreen").style.display="block";
 }
 
-function skipMot(){
+function skipMot(i){
+let t=tasks[i],state=taskState(t);
+state.skip=true;
+state.done=false;
+setTaskState(t,state);
 closeMot();
+save();
+render(current);
 }
 
 function skipTask(i){
