@@ -455,14 +455,34 @@ placeholder="Optional: describe the food"></textarea>
 <span>🏆</span>Progress
 </button>
 
+<button data-p="world">
+<span>🌎</span>World
+</button>
+
 <button data-p="settings">
 <span>⚙</span>Settings
 </button>
 
 </nav>
 
+<div id="authGate" style="display:none;position:fixed;z-index:100;inset:0;background:#f6f7fb;align-items:center;justify-content:center;padding:20px">
+<div class="card" style="width:min(430px,100%);text-align:center">
+<div class="logo" style="padding:0 0 10px">NE<span>Y</span>VO</div>
+<h2 id="authTitle">Welcome to NEYVO 👋</h2>
+<p class="muted" id="authText" style="margin:8px 0 18px">Sign in with Google to continue.</p>
+<button class="btn" id="googleLoginBtn" type="button" onclick="googleLogin()">Continue with Google</button>
+<div id="nameBox" style="display:none;text-align:left;margin-top:16px">
+<label class="muted">Your NEYVO display name</label>
+<input id="neyvoName" maxlength="30" placeholder="Enter your name" style="margin-top:7px">
+<button class="btn" style="width:100%;margin-top:10px" onclick="saveNeyvoName()">Continue</button>
+</div>
+<p id="authError" style="display:none;color:#b42318;margin-top:12px;font-size:14px"></p>
+</div>
+</div>
+
 <div class="mot" id="motScreen"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
 let tasks=JSON.parse(localStorage.neyvoTasks||"[]");
@@ -474,6 +494,83 @@ let foodImage="";
 let foodMime="image/jpeg";
 
 const $=x=>document.getElementById(x);
+
+/* GOOGLE-ONLY AUTH */
+const SUPABASE_URL="https://krswarliexhwbgohfnxz.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_SIKk0dBJpys-EMfxn5jm5Q_FcYZReY7";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const NEYVO_SITE_URL="https://messagerpersonal.github.io/NEYVO/";
+
+function showAuthError(message){
+  let e=$("authError"); if(e){e.textContent=message;e.style.display="block";}
+}
+function showLogin(){
+  $("authGate").style.display="flex";
+  $("googleLoginBtn").style.display="block";
+  $("nameBox").style.display="none";
+  $("authTitle").textContent="Welcome to NEYVO 👋";
+  $("authText").textContent="Sign in with Google to continue.";
+}
+function showNameSetup(){
+  $("authGate").style.display="flex";
+  $("googleLoginBtn").style.display="none";
+  $("nameBox").style.display="block";
+  $("authTitle").textContent="One last step ✨";
+  $("authText").textContent="Choose the NEYVO name that will appear on your profile and World ranking.";
+  $("neyvoName").value=localStorage.getItem("neyvoDisplayName")||"";
+}
+function hideAuth(){$("authGate").style.display="none";}
+async function googleLogin(){
+  let b=$("googleLoginBtn");
+  if(b){b.disabled=true;b.textContent="Opening Google...";}
+  try{
+    let {error}=await supabaseClient.auth.signInWithOAuth({
+      provider:"google",
+      options:{redirectTo:NEYVO_SITE_URL}
+    });
+    if(error)throw error;
+  }catch(e){
+    showAuthError(e.message||"Google sign-in could not start.");
+    if(b){b.disabled=false;b.textContent="Continue with Google";}
+  }
+}
+async function saveNeyvoName(){
+  let name=$("neyvoName").value.trim().replace(/\s+/g," ");
+  if(name.length<2)return showAuthError("Please enter a name with at least 2 characters.");
+  if(name.length>30)return showAuthError("Please keep your NEYVO name under 30 characters.");
+  try{
+    let {error}=await supabaseClient.auth.updateUser({data:{neyvo_name:name}});
+    if(error)throw error;
+    localStorage.setItem("neyvoDisplayName",name);
+    updateNeyvoIdentity(name);
+    hideAuth();
+  }catch(e){showAuthError(e.message||"Could not save your NEYVO name.");}
+}
+function updateNeyvoIdentity(name){
+  let av=document.querySelector(".avatar");
+  if(av)av.textContent=(name||"N").charAt(0).toUpperCase();
+  let h=document.querySelector(".top h1");
+  if(h)h.textContent="Good day, "+esc(name||"there")+" 👋";
+}
+async function initAuth(){
+  let {data,error}=await supabaseClient.auth.getSession();
+  if(error){showLogin();showAuthError(error.message);return;}
+  if(!data.session){showLogin();return;}
+  let name=data.session.user.user_metadata?.neyvo_name||localStorage.getItem("neyvoDisplayName")||"";
+  if(!name){showNameSetup();return;}
+  localStorage.setItem("neyvoDisplayName",name);
+  updateNeyvoIdentity(name);
+  hideAuth();
+}
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"){showLogin();return;}
+  if(session){
+    let name=session.user.user_metadata?.neyvo_name||localStorage.getItem("neyvoDisplayName")||"";
+    if(name){localStorage.setItem("neyvoDisplayName",name);updateNeyvoIdentity(name);hideAuth();}
+    else showNameSetup();
+  }
+});
+
 
 const save=()=>{
 localStorage.neyvoTasks=JSON.stringify(tasks);
@@ -1313,6 +1410,7 @@ x=>({
 
 /* START */
 
+initAuth();
 render();
 renderF();
 restoreLastFoodResult();
